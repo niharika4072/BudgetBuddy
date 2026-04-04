@@ -632,7 +632,7 @@ async function saveConfig(){
   try {
     const res = await fetch(API+'/emergency/setup', { method:'POST', headers, body: JSON.stringify(body) });
     const data = await res.json();
-    efData = data.fund;
+    efData = data.fund || data || body;
     document.getElementById('alert-setup').style.display='none';
     document.getElementById('tracker-section').style.display='block';
     document.getElementById('setup-card').style.display='none';
@@ -641,7 +641,6 @@ async function saveConfig(){
     document.getElementById('tracker-section').scrollIntoView({behavior:'smooth'});
   } catch(err){ showToast('Error saving config.','error'); }
 }
-
 function resetAll(){
   if(!confirm('Reset all emergency fund data? This cannot be undone.')) return;
   localStorage.removeItem(K_CFG);
