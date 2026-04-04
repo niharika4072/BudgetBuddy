@@ -1,0 +1,5 @@
+# BudgetBuddy
+A personal finance tracker for students built with HTML, node.js and Supabase.
+
+## Features
+- User authentication with JWT
