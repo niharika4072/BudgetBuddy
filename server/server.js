@@ -20,6 +20,7 @@ app.use('/api/user',      userRoutes);
 app.use('/api/expenses',  expenseRoutes);
 app.use('/api/goals',     goalRoutes);
 app.use('/api/emergency', emergencyRoutes);
+app.get('/ping', (req, res) => res.send('pong'));
 
 app.listen(process.env.PORT || 3000, () => {
   console.log('Server running on port 3000');
