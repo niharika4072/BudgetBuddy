@@ -574,6 +574,9 @@ function recalcTarget(){
 
 
 const API   ='https://budgetbuddii-server.onrender.com/api';
+  function getCfg(){
+  return efData || null;
+}
 const token = localStorage.getItem('bb_token');
 const headers = { 'Content-Type':'application/json', 'Authorization':'Bearer '+token };
 let efData = null; // holds fund from backend
