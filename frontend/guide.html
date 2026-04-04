@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Guide — BudgetBuddy</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --ink:#1a1a1a; --ink-soft:#4a4a4a; --ink-muted:#8a8a8a;
+      --paper:#fafaf8; --paper-warm:#f5f3ee;
+      --accent:#2d6a4f; --accent-light:#d8f3dc; --accent-mid:#52b788; --accent-dark:#1b4332;
+      --border:#e0ddd7; --white:#ffffff;
+      --nav-h:68px; --danger:#c0392b; --warn:#d97706; --sidebar-w:260px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);font-size:15px;line-height:1.6;overflow-x:hidden;}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 5%;z-index:500;box-shadow:0 1px 12px rgba(0,0,0,0.05);}
+    .nav-left{display:flex;align-items:center;gap:14px;}
+    .hamburger{width:36px;height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;border-radius:8px;border:1.5px solid var(--border);background:transparent;transition:background 0.2s;flex-shrink:0;}
+    .hamburger:hover{background:var(--paper-warm);}
+    .hamburger span{display:block;width:16px;height:1.5px;background:var(--ink);border-radius:2px;transition:transform 0.25s,opacity 0.25s;}
+    .hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+    .hamburger.open span:nth-child(2){opacity:0;}
+    .hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .logo-icon{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+    .logo-icon svg{width:20px;height:20px;fill:white;}
+    .logo-text{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--ink);}
+    .logo-text span{color:var(--accent);}
+    .nav-links{display:flex;align-items:center;gap:6px;list-style:none;}
+    .nav-links a{text-decoration:none;color:var(--ink-soft);font-size:0.87rem;font-weight:500;padding:8px 13px;border-radius:8px;transition:background 0.2s,color 0.2s;}
+    .nav-links a:hover{background:var(--paper-warm);color:var(--ink);}
+    .nav-links .btn-logout{background:#fee2e2;color:var(--danger);border-radius:8px;padding:8px 18px;font-weight:600;}
+    .nav-links .btn-logout:hover{background:#fecaca;}
+
+    /* SIDEBAR */
+    .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.25);z-index:400;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+    .sidebar-overlay.visible{opacity:1;pointer-events:all;}
+    .sidebar{position:fixed;top:var(--nav-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);z-index:450;padding:24px 0;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;}
+    .sidebar.open{transform:translateX(0);}
+    .sidebar-section{padding:0 16px;margin-bottom:8px;}
+    .sidebar-section-label{font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-muted);padding:6px 8px 8px;}
+    .sidebar a{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink-soft);font-size:0.88rem;font-weight:500;padding:9px 12px;border-radius:9px;transition:background 0.15s,color 0.15s;margin-bottom:2px;}
+    .sidebar a:hover,.sidebar a.active{background:var(--accent-light);color:var(--accent);}
+    .sidebar a .s-icon{font-size:1rem;width:20px;text-align:center;}
+    .sidebar-divider{border:none;border-top:1px solid var(--border);margin:10px 16px;}
+
+    /* MAIN */
+    main{padding-top:calc(var(--nav-h) + 40px);padding-bottom:80px;max-width:860px;margin:0 auto;padding-left:24px;padding-right:24px;}
+
+    /* HERO */
+    .guide-hero{background:linear-gradient(135deg,var(--accent-dark) 0%,var(--accent) 100%);border-radius:20px;padding:48px 40px;margin-bottom:40px;position:relative;overflow:hidden;}
+    .guide-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:rgba(255,255,255,0.06);border-radius:50%;}
+    .guide-hero::after{content:'';position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;background:rgba(255,255,255,0.04);border-radius:50%;}
+    .guide-hero h1{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,4vw,2.6rem);color:white;letter-spacing:-0.03em;margin-bottom:10px;position:relative;z-index:1;}
+    .guide-hero p{color:rgba(255,255,255,0.75);font-size:0.95rem;max-width:500px;line-height:1.7;position:relative;z-index:1;}
+    .guide-hero-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;position:relative;z-index:1;}
+    .guide-badge{background:rgba(255,255,255,0.15);color:white;font-size:0.78rem;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);}
+
+    /* PROGRESS BAR */
+    .progress-wrap{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:32px;display:flex;align-items:center;gap:16px;}
+    .progress-label{font-size:0.82rem;color:var(--ink-muted);white-space:nowrap;}
+    .progress-track{flex:1;height:8px;background:var(--paper-warm);border-radius:4px;overflow:hidden;}
+    .progress-fill-bar{height:100%;background:linear-gradient(90deg,var(--accent-mid),var(--accent));border-radius:4px;transition:width 0.5s ease;}
+    .progress-pct{font-size:0.82rem;font-weight:600;color:var(--accent);white-space:nowrap;}
+
+    /* QUICK NAV */
+    .quick-nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:36px;}
+    .quick-nav-btn{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;text-decoration:none;color:var(--ink-soft);font-size:0.82rem;font-weight:500;display:flex;align-items:center;gap:8px;transition:all 0.2s;cursor:pointer;}
+    .quick-nav-btn:hover{border-color:var(--accent-mid);color:var(--accent);background:var(--accent-light);transform:translateY(-2px);}
+    .quick-nav-btn .qn-icon{font-size:1.1rem;}
+
+    /* SECTIONS */
+    .guide-section{margin-bottom:48px;}
+    .section-title{font-family:'DM Serif Display',serif;font-size:1.6rem;letter-spacing:-0.02em;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+    .section-sub{font-size:0.88rem;color:var(--ink-muted);margin-bottom:24px;}
+
+    /* STEP CARDS */
+    .steps{display:flex;flex-direction:column;gap:16px;}
+    .step-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow 0.2s;}
+    .step-card:hover{box-shadow:0 4px 20px rgba(45,106,79,0.08);}
+    .step-head{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;user-select:none;}
+    .step-num{width:32px;height:32px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0;}
+    .step-num.done{background:var(--accent-mid);}
+    .step-title-text{font-size:0.95rem;font-weight:600;color:var(--ink);flex:1;}
+    .step-chevron{font-size:0.75rem;color:var(--ink-muted);transition:transform 0.25s;}
+    .step-chevron.open{transform:rotate(90deg);}
+    .step-body{display:none;padding:0 20px 20px 66px;border-top:1px solid var(--border);}
+    .step-body.open{display:block;}
+    .step-body p{font-size:0.88rem;color:var(--ink-soft);line-height:1.7;margin-bottom:12px;}
+    .step-body ul{padding-left:18px;margin-bottom:12px;}
+    .step-body ul li{font-size:0.88rem;color:var(--ink-soft);line-height:1.7;margin-bottom:4px;}
+    .step-tip{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 14px;font-size:0.82rem;color:var(--accent-dark);margin-top:8px;line-height:1.6;}
+    .step-warn{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 14px;font-size:0.82rem;color:#92400e;margin-top:8px;line-height:1.6;}
+    .step-done-btn{background:var(--accent);color:white;border:none;border-radius:8px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;margin-top:12px;transition:background 0.2s;}
+    .step-done-btn:hover{background:var(--accent-dark);}
+    .step-done-btn.marked{background:var(--accent-mid);}
+
+    /* FEATURE CARDS */
+    .feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+    .feature-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:22px;text-decoration:none;color:inherit;transition:all 0.2s;display:flex;flex-direction:column;gap:10px;}
+    .feature-card:hover{border-color:var(--accent-mid);box-shadow:0 6px 20px rgba(45,106,79,0.1);transform:translateY(-2px);}
+    .feat-icon-wrap{width:44px;height:44px;background:var(--accent-light);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+    .feat-title{font-size:0.95rem;font-weight:600;color:var(--ink);}
+    .feat-desc{font-size:0.8rem;color:var(--ink-muted);line-height:1.5;}
+    .feat-link{font-size:0.78rem;color:var(--accent);font-weight:600;margin-top:auto;}
+
+    /* FAQ */
+    .faq-item{background:var(--white);border:1.5px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+    .faq-q{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;font-size:0.9rem;font-weight:600;color:var(--ink);gap:12px;}
+    .faq-q:hover{background:var(--paper-warm);}
+    .faq-chevron{font-size:0.75rem;color:var(--ink-muted);transition:transform 0.25s;flex-shrink:0;}
+    .faq-chevron.open{transform:rotate(180deg);}
+    .faq-a{display:none;padding:0 20px 16px;font-size:0.86rem;color:var(--ink-soft);line-height:1.7;border-top:1px solid var(--border);}
+    .faq-a.open{display:block;}
+
+    /* GLOSSARY */
+    .glossary-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    @media(max-width:600px){.glossary-grid{grid-template-columns:1fr;}}
+    .glossary-item{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:16px;}
+    .glossary-term{font-size:0.88rem;font-weight:700;color:var(--accent);margin-bottom:4px;}
+    .glossary-def{font-size:0.82rem;color:var(--ink-soft);line-height:1.5;}
+
+    /* SEARCH */
+    .search-wrap{position:relative;margin-bottom:32px;}
+    .search-input{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:12px 18px 12px 44px;font-family:'DM Sans',sans-serif;font-size:0.92rem;color:var(--ink);background:var(--white);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+    .search-input:focus{border-color:var(--accent-mid);box-shadow:0 0 0 3px rgba(82,183,136,0.15);}
+    .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none;}
+    .search-results{margin-top:8px;display:none;}
+    .search-result-item{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:6px;cursor:pointer;font-size:0.85rem;color:var(--ink-soft);}
+    .search-result-item:hover{border-color:var(--accent-mid);color:var(--accent);background:var(--accent-light);}
+    .search-result-item strong{color:var(--ink);}
+
+    /* COMPLETION */
+    .completion-card{background:linear-gradient(135deg,var(--accent-dark),var(--accent));border-radius:16px;padding:32px;text-align:center;color:white;margin-top:40px;}
+    .completion-card h2{font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:8px;}
+    .completion-card p{color:rgba(255,255,255,0.75);font-size:0.9rem;margin-bottom:20px;}
+    .completion-card a{background:white;color:var(--accent);text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:0.9rem;display:inline-block;transition:transform 0.15s;}
+    .completion-card a:hover{transform:translateY(-2px);}
+
+    /* FOOTER */
+    footer{background:var(--ink);color:#888;padding:28px 5%;}
+    .footer-bottom{max-width:860px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+    .footer-bottom p{font-size:0.78rem;color:#555;}
+    .footer-logo-text{font-family:'DM Serif Display',serif;font-size:1rem;color:#e8e5df;}
+    .footer-logo-text span{color:var(--accent-mid);}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:white;padding:12px 22px;border-radius:10px;font-size:0.85rem;font-weight:500;z-index:9999;opacity:0;transition:transform 0.3s,opacity 0.3s;white-space:nowrap;}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+    .toast.success{background:var(--accent-dark);}
+
+    /* ANIMATIONS */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .guide-hero{animation:fadeUp 0.5s ease;}
+    .guide-section{animation:fadeUp 0.5s ease;}
+  </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Main</div>
+    <a href="dashboard.html"><span class="s-icon">📊</span> Dashboard</a>
+    <a href="profile.html"><span class="s-icon">👤</span> My Profile</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Tools</div>
+    <a href="smartbalace.html"><span class="s-icon">🧮</span> Smart Balance</a>
+    <a href="savinggoal.html"><span class="s-icon">🎯</span> Savings Goals</a>
+    <a href="emergencyf.html"><span class="s-icon">🛡️</span> Emergency Fund</a>
+    <a href="whatif.html"><span class="s-icon">📈</span> What-If Simulation</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Learn</div>
+     <div class="sidebar-section">
+    <a href="tips.html"><span class="s-icon">💡</span> Money Tips</a>
+    <a href="guide.html"><span class="s-icon">📖</span> User Guide</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <a href="#" id="sidebar-logout" style="color:var(--danger)"><span class="s-icon">🚪</span> Logout</a>
+  </div>
+</aside>
+
+<nav>
+  <div class="nav-left">
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    <a href="dashboard.html" class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H9l3-3 3 3h-2v4z"/></svg></div>
+      <span class="logo-text">Budget<span>Buddy</span></span>
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="#" class="btn-logout" id="nav-logout">Logout</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <div class="guide-hero">
+    <h1>📖 BudgetBuddy User Guide</h1>
+    <p>Everything you need to know to manage your money smarter. Follow the steps below or jump to any section you need.</p>
+    <div class="guide-hero-badges">
+      <span class="guide-badge">🕐 ~10 min read</span>
+      <span class="guide-badge">👶 Beginner friendly</span>
+      <span class="guide-badge">🇮🇳 Made for Indian students</span>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <span class="progress-label">Your guide progress</span>
+    <div class="progress-track"><div class="progress-fill-bar" id="progress-bar" style="width:0%"></div></div>
+    <span class="progress-pct" id="progress-pct">0%</span>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" placeholder="Search the guide… e.g. 'how to add expense'" id="search-input" oninput="searchGuide(this.value)"/>
+    <div class="search-results" id="search-results"></div>
+  </div>
+
+  <!-- QUICK NAV -->
+  <div class="quick-nav">
+    <a class="quick-nav-btn" href="#getting-started"><span class="qn-icon">🚀</span> Getting Started</a>
+    <a class="quick-nav-btn" href="#dashboard"><span class="qn-icon">📊</span> Dashboard</a>
+    <a class="quick-nav-btn" href="#expenses"><span class="qn-icon">💸</span> Expenses</a>
+    <a class="quick-nav-btn" href="#savings"><span class="qn-icon">🎯</span> Savings Goals</a>
+    <a class="quick-nav-btn" href="#emergency"><span class="qn-icon">🛡️</span> Emergency Fund</a>
+    <a class="quick-nav-btn" href="#smart-balance"><span class="qn-icon">🧮</span> Smart Balance</a>
+    <a class="quick-nav-btn" href="#reports"><span class="qn-icon">📥</span> Reports</a>
+    <a class="quick-nav-btn" href="#faq"><span class="qn-icon">❓</span> FAQ</a>
+  </div>
+
+  <!-- GETTING STARTED -->
+  <div class="guide-section" id="getting-started">
+    <div class="section-title">🚀 Getting Started</div>
+    <div class="section-sub">Follow these steps in order to set up your BudgetBuddy account</div>
+    <div class="steps">
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" id="snum-1">1</div>
+          <span class="step-title-text">Create your account</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>Go to the <strong>Login page</strong> and click <strong>"Sign Up"</strong>. You'll go through 4 quick steps:</p>
+          <ul>
+            <li><strong>Step 1 — Account:</strong> Enter your full name, email, and phone number</li>
+            <li><strong>Step 2 — Security:</strong> Create a strong password and verify your email with the OTP code sent to you</li>
+            <li><strong>Step 3 — Profile:</strong> Choose your avatar, role (student/professional), date of birth, and city</li>
+            <li><strong>Step 4 — Financial Setup:</strong> Enter your monthly income, fixed expenses, and savings target</li>
+          </ul>
+          <div class="step-tip">💡 The financial details you enter in Step 4 are used to calculate your "Safe to Spend" amount on the dashboard. You can update them anytime from your Profile page.</div>
+          <button class="step-done-btn" onclick="markDone(this, 1)">✓ Mark as done</button>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" id="snum-2">2</div>
+          <span class="step-title-text">Explore your Dashboard</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>After logging in, you'll land on your <strong>Dashboard</strong>. This is your financial home — it shows:</p>
+          <ul>
+            <li><strong>Monthly Income</strong> — your total income from your profile</li>
+            <li><strong>Safe to Spend</strong> — income minus fixed expenses and savings target</li>
+            <li><strong>Spent This Month</strong> — total expenses logged so far this month</li>
+            <li><strong>Savings Target</strong> — your monthly savings goal amount</li>
+          </ul>
+          <div class="step-tip">💡 The dashboard updates automatically as you add expenses. The pie chart shows your spending by category.</div>
+          <button class="step-done-btn" onclick="markDone(this, 2)">✓ Mark as done</button>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" id="snum-3">3</div>
+          <span class="step-title-text">Add your first expense</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>On the dashboard, find the <strong>"Add Expense"</strong> section. Fill in:</p>
+          <ul>
+            <li><strong>Amount (₹)</strong> — how much you spent</li>
+            <li><strong>Description</strong> — what you bought (e.g. "Zomato order")</li>
+            <li><strong>Category</strong> — Food, Transport, Shopping, Health, Entertainment, or Other</li>
+          </ul>
+          <p>Click <strong>"Add →"</strong> and it appears instantly in your recent expenses list and updates the pie chart.</p>
+          <div class="step-tip">💡 To delete an expense, hover over it in the list and click the ✕ button that appears on the right.</div>
+          <button class="step-done-btn" onclick="markDone(this, 3)">✓ Mark as done</button>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" id="snum-4">4</div>
+          <span class="step-title-text">Set up a savings goal</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>Go to <strong>Savings Goals</strong> from the sidebar. Click <strong>"+ New Goal"</strong> and fill in:</p>
+          <ul>
+            <li><strong>Goal name</strong> — e.g. "New Laptop" or "Trip to Goa"</li>
+            <li><strong>Target amount</strong> — total amount you want to save</li>
+            <li><strong>Monthly contribution</strong> — how much you'll save per month</li>
+            <li><strong>Deadline</strong> — optional target date</li>
+            <li><strong>Priority</strong> — High, Medium, or Low</li>
+          </ul>
+          <p>Once created, you can <strong>deposit money</strong> into the goal anytime and track your progress with a visual progress bar.</p>
+          <div class="step-tip">💡 BudgetBuddy automatically calculates how many months it will take to reach your goal based on your monthly contribution.</div>
+          <button class="step-done-btn" onclick="markDone(this, 4)">✓ Mark as done</button>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" id="snum-5">5</div>
+          <span class="step-title-text">Build your Emergency Fund</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>Go to <strong>Emergency Fund</strong> from the sidebar. First, set it up by entering:</p>
+          <ul>
+            <li><strong>Monthly essential expenses</strong> — rent, food, transport (bare minimum to survive)</li>
+            <li><strong>Monthly contribution</strong> — how much you'll add each month</li>
+            <li><strong>Target months</strong> — choose 3, 6, or 9 months of expenses as your goal</li>
+          </ul>
+          <p>After setup, you can <strong>deposit</strong> and <strong>withdraw</strong> money and see your progress ring fill up.</p>
+          <div class="step-tip">💡 Financial experts recommend having at least 3 months of expenses saved as an emergency fund before investing.</div>
+          <div class="step-warn">⚠️ Only withdraw from your emergency fund for actual emergencies — job loss, medical bills, urgent repairs.</div>
+          <button class="step-done-btn" onclick="markDone(this, 5)">✓ Mark as done</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="guide-section" id="dashboard">
+    <div class="section-title">📊 Understanding the Dashboard</div>
+    <div class="section-sub">Your financial command centre — everything at a glance</div>
+    <div class="steps">
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">What is "Safe to Spend"?</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p><strong>Safe to Spend = Income − Fixed Expenses − Savings Target</strong></p>
+          <p>This is the amount left over after covering your essentials and savings. You can spend this freely without affecting your financial goals.</p>
+          <p>Example: If your income is ₹15,000, fixed expenses are ₹6,000, and savings target is ₹3,000 — your Safe to Spend is ₹6,000 (or ₹200/day for 30 days).</p>
+          <div class="step-tip">💡 Try to keep "Spent This Month" below your "Safe to Spend" to stay on track!</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">How to read the expense chart</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>The <strong>pie chart</strong> shows your expenses broken down by category for the selected time period.</p>
+          <ul>
+            <li>Use the <strong>Day / Week / Month / Year</strong> tabs to switch between periods</li>
+            <li>Use <strong>← Prev</strong> and <strong>Next →</strong> buttons to browse history (up to 7 days back for daily view)</li>
+            <li>The legend on the right shows the amount and percentage for each category</li>
+          </ul>
+          <div class="step-tip">💡 If you see Food taking more than 40% of your spending, try the 50-30-20 rule: 50% needs, 30% wants, 20% savings.</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">Financial Health Score</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>Your <strong>Financial Health Score</strong> (out of 100) is calculated based on:</p>
+          <ul>
+            <li><strong>Savings Rate</strong> — are you saving 20% or more of your income?</li>
+            <li><strong>Budget Used</strong> — are you spending less than 70% of your safe balance?</li>
+          </ul>
+          <p>Score ranges: 0–39 = Needs Work, 40–59 = Fair, 60–79 = Good, 80–100 = Excellent</p>
+          <div class="step-tip">💡 The fastest way to improve your score is to increase your savings target or reduce expenses.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div class="guide-section" id="expenses">
+    <div class="section-title">💸 Managing Expenses</div>
+    <div class="section-sub">Track every rupee you spend</div>
+    <div class="steps">
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">Expense categories explained</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li>🍕 <strong>Food</strong> — meals, groceries, snacks, restaurant bills, food delivery</li>
+            <li>🚌 <strong>Transport</strong> — metro, auto, cab, petrol, bus, travel tickets</li>
+            <li>🛍️ <strong>Shopping</strong> — clothes, accessories, gadgets, online shopping</li>
+            <li>💊 <strong>Health</strong> — medicines, doctor visits, gym, health apps</li>
+            <li>🎬 <strong>Entertainment</strong> — movies, OTT subscriptions, games, events</li>
+            <li>📦 <strong>Other</strong> — anything that doesn't fit above</li>
+          </ul>
+          <div class="step-tip">💡 Being accurate with categories helps your pie chart give meaningful insights about where your money goes.</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">How to delete an expense</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>In the <strong>Recent Expenses</strong> list on the dashboard:</p>
+          <ul>
+            <li>Hover your mouse over any expense item</li>
+            <li>A small <strong>✕</strong> button will appear on the right side</li>
+            <li>Click it to permanently delete that expense</li>
+          </ul>
+          <div class="step-warn">⚠️ Deleted expenses cannot be recovered. Make sure you want to delete before clicking ✕.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SAVINGS GOALS -->
+  <div class="guide-section" id="savings">
+    <div class="section-title">🎯 Savings Goals</div>
+    <div class="section-sub">Save towards anything — a gadget, a trip, or your future</div>
+    <div class="steps">
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">Creating and managing goals</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>Go to <strong>Savings Goals</strong> from the sidebar. You can:</p>
+          <ul>
+            <li><strong>Create</strong> a new goal with a name, target amount, monthly contribution, deadline, and priority</li>
+            <li><strong>Deposit</strong> money into any goal — click "Add Money" and enter the amount</li>
+            <li><strong>Edit</strong> a goal's details anytime — click the edit icon</li>
+            <li><strong>Delete</strong> a goal if you no longer need it</li>
+          </ul>
+          <div class="step-tip">💡 Set a realistic monthly contribution — the app will show you exactly when you'll reach your goal!</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">Priority levels explained</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li>🔴 <strong>High</strong> — urgent goals you want to reach first (e.g. emergency fund, urgent repair)</li>
+            <li>🟡 <strong>Medium</strong> — important but not urgent (e.g. new laptop for college)</li>
+            <li>🟢 <strong>Low</strong> — nice to have someday (e.g. vacation, luxury item)</li>
+          </ul>
+          <div class="step-tip">💡 Focus on High priority goals first. Once done, move to Medium, then Low.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EMERGENCY FUND -->
+  <div class="guide-section" id="emergency">
+    <div class="section-title">🛡️ Emergency Fund</div>
+    <div class="section-sub">Your financial safety net for unexpected situations</div>
+    <div class="steps">
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">Setting up your emergency fund</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>Go to <strong>Emergency Fund</strong> from the sidebar. Click <strong>"Setup Fund"</strong> and enter:</p>
+          <ul>
+            <li><strong>Monthly Essential Expenses</strong> — your bare minimum monthly costs (rent + food + transport)</li>
+            <li><strong>Monthly Income</strong> — your regular income</li>
+            <li><strong>Monthly Contribution</strong> — how much you'll add to the fund each month</li>
+            <li><strong>Where to keep it</strong> — savings account, FD, liquid fund, etc.</li>
+            <li><strong>Target months</strong> — 3, 6, or 9 months of expenses as your goal</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">When to use your emergency fund</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p><strong>Use it for:</strong></p>
+          <ul>
+            <li>Sudden job loss or income disruption</li>
+            <li>Medical emergency (hospital bill, medicines)</li>
+            <li>Urgent home or vehicle repair</li>
+            <li>Family emergency requiring immediate funds</li>
+          </ul>
+          <p><strong>Do NOT use it for:</strong></p>
+          <ul>
+            <li>Planned purchases (phone upgrade, clothes)</li>
+            <li>Vacations or entertainment</li>
+            <li>Regular monthly expenses you could have planned for</li>
+          </ul>
+          <div class="step-warn">⚠️ If you withdraw, make a plan to replenish the fund as soon as possible.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SMART BALANCE -->
+  <div class="guide-section" id="smart-balance">
+    <div class="section-title">🧮 Smart Balance Calculator</div>
+    <div class="section-sub">Know exactly how much you can safely spend each day</div>
+    <div class="steps">
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">How to use the calculator</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <p>The Smart Balance Calculator takes your financial details and calculates your <strong>daily safe-to-spend amount</strong>.</p>
+          <ul>
+            <li>Enter your <strong>monthly income</strong></li>
+            <li>Enter your <strong>fixed expenses</strong> (rent, fees, EMIs)</li>
+            <li>Enter your <strong>savings target</strong></li>
+            <li>Enter any <strong>investments</strong> (SIP, RD, etc.)</li>
+            <li>Enter <strong>number of days</strong> remaining in the month</li>
+          </ul>
+          <p>The calculator shows your <strong>daily budget</strong> and provides personalised tips based on your numbers.</p>
+          <div class="step-tip">💡 Your details are saved automatically, so next time you open it, your numbers are pre-filled!</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- REPORTS -->
+  <div class="guide-section" id="reports">
+    <div class="section-title">📥 Budget Reports</div>
+    <div class="section-sub">Download your expense history anytime</div>
+    <div class="steps">
+
+      <div class="step-card">
+        <div class="step-head" onclick="toggleStep(this)">
+          <div class="step-num" style="background:var(--ink-muted)">?</div>
+          <span class="step-title-text">CSV vs PDF — which to download?</span>
+          <span class="step-chevron">▶</span>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li>📊 <strong>CSV</strong> — best for opening in Excel or Google Sheets. Use this if you want to do your own calculations or create charts.</li>
+            <li>📄 <strong>PDF</strong> — best for sharing or printing. Includes a formatted report with your name, summary cards, category breakdown chart, and full transaction list.</li>
+          </ul>
+          <p>Both are available for <strong>Today, This Week, This Month,</strong> and <strong>All Time</strong>.</p>
+          <div class="step-tip">💡 Download a monthly PDF at the end of each month to keep a record of your spending habits over time.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ALL FEATURES -->
+  <div class="guide-section">
+    <div class="section-title">⚡ All Features at a Glance</div>
+    <div class="section-sub">Click any feature to go directly to it</div>
+    <div class="feature-grid">
+      <a href="dashboard.html" class="feature-card">
+        <div class="feat-icon-wrap">📊</div>
+        <div class="feat-title">Dashboard</div>
+        <div class="feat-desc">Your financial overview — income, spending, savings, health score, and expense charts.</div>
+        <div class="feat-link">Open Dashboard →</div>
+      </a>
+      <a href="smartbalace.html" class="feature-card">
+        <div class="feat-icon-wrap">🧮</div>
+        <div class="feat-title">Smart Balance Calculator</div>
+        <div class="feat-desc">Calculate your daily safe-to-spend amount based on your income and expenses.</div>
+        <div class="feat-link">Open Calculator →</div>
+      </a>
+      <a href="savinggoal.html" class="feature-card">
+        <div class="feat-icon-wrap">🎯</div>
+        <div class="feat-title">Savings Goals</div>
+        <div class="feat-desc">Create goals, track progress, deposit money, and see when you'll reach your target.</div>
+        <div class="feat-link">Open Goals →</div>
+      </a>
+      <a href="emergencyf.html" class="feature-card">
+        <div class="feat-icon-wrap">🛡️</div>
+        <div class="feat-title">Emergency Fund</div>
+        <div class="feat-desc">Build a safety net of 3–9 months of expenses for unexpected situations.</div>
+        <div class="feat-link">Open Emergency Fund →</div>
+      </a>
+      <a href="whatif.html" class="feature-card">
+        <div class="feat-icon-wrap">📈</div>
+        <div class="feat-title">What-If Simulation</div>
+        <div class="feat-desc">Ask "what if I save ₹500 more?" and get instant financial projections.</div>
+        <div class="feat-link">Open Simulation →</div>
+      </a>
+      <a href="profile.html" class="feature-card">
+        <div class="feat-icon-wrap">👤</div>
+        <div class="feat-title">My Profile</div>
+        <div class="feat-desc">Update your personal details, financial setup, avatar, and view your achievements.</div>
+        <div class="feat-link">Open Profile →</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="guide-section" id="faq">
+    <div class="section-title">❓ Frequently Asked Questions</div>
+    <div class="section-sub">Quick answers to common questions</div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Can multiple people use BudgetBuddy on the same device? <span class="faq-chevron">▼</span></div>
+      <div class="faq-a">Yes! Each person signs up with their own email and password. Your data is completely separate — logging out and logging in with a different account shows only that account's data.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Is my financial data safe? <span class="faq-chevron">▼</span></div>
+      <div class="faq-a">Yes. Your password is hashed (encrypted) before being stored — even the developers cannot see it. Your data is stored securely in Supabase (PostgreSQL). We never share your data with anyone.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">I forgot my password. What do I do? <span class="faq-chevron">▼</span></div>
+      <div class="faq-a">On the login page, click <strong>"Forgot password?"</strong> and enter your email. A reset link will be sent to you. Follow the link to set a new password.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Why is my dashboard showing ₹— instead of my real numbers? <span class="faq-chevron">▼</span></div>
+      <div class="faq-a">This usually means the server isn't running or there's a connection issue. Make sure the BudgetBuddy server is running on your computer. If the numbers still don't load, try logging out and logging back in.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Can I change my email address? <span class="faq-chevron">▼</span></div>
+      <div class="faq-a">Currently, email cannot be changed after registration as it was used to verify your account. You can update your name, phone, city, financial details, and avatar from the Profile page.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">How is the Financial Health Score calculated? <span class="faq-chevron">▼</span></div>
+      <div class="faq-a">Your score (0–100) is based on two factors: your savings rate (saving 20%+ = +25 points, 10%+ = +15 points) and how much of your safe balance you've spent (under 70% = +25 points, under 90% = +10 points). The base score is 50, so a perfect score of 100 means you're saving well AND staying within budget.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Does BudgetBuddy work on mobile? <span class="faq-chevron">▼</span></div>
+      <div class="faq-a">Yes! BudgetBuddy is fully responsive and works on mobile browsers. The left panel is hidden on small screens and the layout adjusts automatically for a good mobile experience.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">What is the What-If Simulation? <span class="faq-chevron">▼</span></div>
+      <div class="faq-a">The What-If Simulation lets you ask financial questions like "What if I save ₹500 more per month?" or "What if I reduce food spending by 20%?" and get instant projections of how it would affect your savings and goals over time.</div>
+    </div>
+
+  </div>
+
+  <!-- GLOSSARY -->
+  <div class="guide-section">
+    <div class="section-title">📚 Glossary</div>
+    <div class="section-sub">Key financial terms used in BudgetBuddy</div>
+    <div class="glossary-grid">
+      <div class="glossary-item">
+        <div class="glossary-term">Safe to Spend</div>
+        <div class="glossary-def">Income minus fixed expenses and savings target. This is what you can freely spend without affecting your goals.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Fixed Expenses</div>
+        <div class="glossary-def">Regular monthly costs that don't change — rent, college fees, EMIs, subscriptions, internet bill.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Emergency Fund</div>
+        <div class="glossary-def">Money set aside for unexpected situations. Recommended: 3–6 months of your essential expenses.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Savings Rate</div>
+        <div class="glossary-def">The percentage of your income you save each month. Target: at least 20% (the 50-30-20 rule).</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">50-30-20 Rule</div>
+        <div class="glossary-def">A popular budgeting rule: spend 50% on needs, 30% on wants, and save 20% of your income.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">SIP</div>
+        <div class="glossary-def">Systematic Investment Plan — investing a fixed amount in mutual funds every month. A great habit to start early.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Health Score</div>
+        <div class="glossary-def">BudgetBuddy's score (0–100) measuring how well you're saving and staying within your budget.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Daily Budget</div>
+        <div class="glossary-def">Safe to Spend divided by days remaining in the month. How much you can spend per day without going over budget.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETION -->
+  <div class="completion-card" id="completion-card" style="display:none">
+    <div style="font-size:3rem;margin-bottom:12px">🎉</div>
+    <h2>You've completed the guide!</h2>
+    <p>You're ready to take control of your finances with BudgetBuddy. Start by adding your first expense!</p>
+    <a href="dashboard.html">Go to Dashboard →</a>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-bottom">
+    <span class="footer-logo-text">Budget<span>Buddy</span></span>
+    <p>© 2025 BudgetBuddy. All rights reserved.</p>
+    <p>Made with ♥ for students everywhere.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+
+// ── SIDEBAR ──
+const hamburger = document.getElementById('hamburger');
+const sidebar   = document.getElementById('sidebar');
+const overlay   = document.getElementById('sidebar-overlay');
+hamburger.addEventListener('click',()=>{
+  const open = sidebar.classList.toggle('open');
+  overlay.classList.toggle('visible',open);
+  hamburger.classList.toggle('open',open);
+});
+overlay.addEventListener('click',()=>{
+  sidebar.classList.remove('open');
+  overlay.classList.remove('visible');
+  hamburger.classList.remove('open');
+});
+
+// ── LOGOUT ──
+function doLogout(){ localStorage.removeItem('bb_token'); localStorage.removeItem('bb_user'); window.location.href='index.html'; }
+document.getElementById('nav-logout').addEventListener('click',e=>{e.preventDefault();doLogout();});
+document.getElementById('sidebar-logout').addEventListener('click',e=>{e.preventDefault();doLogout();});
+
+// ── TOAST ──
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  setTimeout(()=>t.className='toast',3000);
+}
+
+// ── STEP TOGGLE ──
+function toggleStep(head){
+  const body = head.nextElementSibling;
+  const chev = head.querySelector('.step-chevron');
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+// ── FAQ TOGGLE ──
+function toggleFaq(q){
+  const a = q.nextElementSibling;
+  const chev = q.querySelector('.faq-chevron');
+  a.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+// ── MARK DONE ──
+let doneCount = 0;
+const totalSteps = 5;
+
+function markDone(btn, stepNum){
+  const numEl = document.getElementById('snum-' + stepNum);
+  if(btn.classList.contains('marked')){
+    btn.classList.remove('marked');
+    btn.textContent = '✓ Mark as done';
+    numEl.classList.remove('done');
+    numEl.textContent = stepNum;
+    doneCount = Math.max(0, doneCount - 1);
+  } else {
+    btn.classList.add('marked');
+    btn.textContent = '✅ Done!';
+    numEl.classList.add('done');
+    numEl.textContent = '✓';
+    doneCount++;
+    showToast('Step ' + stepNum + ' marked as done! 🎉', 'success');
+  }
+  updateProgress();
+}
+
+function updateProgress(){
+  const pct = Math.round((doneCount / totalSteps) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+  if(pct === 100){
+    document.getElementById('completion-card').style.display = 'block';
+    document.getElementById('completion-card').scrollIntoView({ behavior: 'smooth' });
+  } else {
+    document.getElementById('completion-card').style.display = 'none';
+  }
+}
+
+// ── SEARCH ──
+const searchData = [
+  { title:'Create an account', section:'getting-started', keywords:'signup register account create new user' },
+  { title:'Explore your Dashboard', section:'dashboard', keywords:'dashboard home overview stats cards' },
+  { title:'Add your first expense', section:'expenses', keywords:'add expense spending money track' },
+  { title:'Set up a savings goal', section:'savings', keywords:'savings goal target save money create goal' },
+  { title:'Build your Emergency Fund', section:'emergency', keywords:'emergency fund setup safety net' },
+  { title:'What is Safe to Spend?', section:'dashboard', keywords:'safe spend income budget daily limit' },
+  { title:'How to read the expense chart', section:'dashboard', keywords:'chart pie graph categories visual' },
+  { title:'Financial Health Score', section:'dashboard', keywords:'health score rating 100 points' },
+  { title:'Expense categories explained', section:'expenses', keywords:'food transport shopping health entertainment other category' },
+  { title:'How to delete an expense', section:'expenses', keywords:'delete remove expense' },
+  { title:'Creating savings goals', section:'savings', keywords:'create goal savings target monthly contribution' },
+  { title:'Emergency fund setup', section:'emergency', keywords:'emergency setup fund configure months' },
+  { title:'When to use emergency fund', section:'emergency', keywords:'withdraw use emergency when' },
+  { title:'Smart Balance Calculator', section:'smart-balance', keywords:'calculator balance daily budget compute' },
+  { title:'CSV vs PDF reports', section:'reports', keywords:'download report csv pdf export' },
+  { title:'Forgot password', section:'faq', keywords:'forgot password reset login cant access' },
+  { title:'Is my data safe?', section:'faq', keywords:'safe secure privacy data password' },
+  { title:'50-30-20 Rule', section:'glossary', keywords:'rule budget fifty thirty twenty percent' },
+];
+
+function searchGuide(query){
+  const results = document.getElementById('search-results');
+  if(!query.trim()){ results.style.display='none'; return; }
+
+  const q = query.toLowerCase();
+  const matches = searchData.filter(item =>
+    item.title.toLowerCase().includes(q) ||
+    item.keywords.includes(q)
+  ).slice(0, 5);
+
+  if(matches.length === 0){
+    results.style.display = 'block';
+    results.innerHTML = '<div class="search-result-item" style="cursor:default;color:var(--ink-muted)">No results found. Try different keywords.</div>';
+    return;
+  }
+
+  results.style.display = 'block';
+  results.innerHTML = matches.map(m =>
+    `<div class="search-result-item" onclick="goToSection('${m.section}')">
+      <strong>${m.title}</strong> — <span style="color:var(--ink-muted);text-transform:capitalize">${m.section.replace('-',' ')}</span>
+    </div>`
+  ).join('');
+}
+
+function goToSection(id){
+  document.getElementById('search-results').style.display = 'none';
+  document.getElementById('search-input').value = '';
+  const el = document.getElementById(id);
+  if(el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Money Tips — BudgetBuddy</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --ink:#1a1a1a; --ink-soft:#4a4a4a; --ink-muted:#8a8a8a;
+      --paper:#fafaf8; --paper-warm:#f5f3ee;
+      --accent:#2d6a4f; --accent-light:#d8f3dc; --accent-mid:#52b788; --accent-dark:#1b4332;
+      --border:#e0ddd7; --white:#ffffff;
+      --nav-h:68px; --danger:#c0392b; --warn:#d97706; --sidebar-w:260px;
+      --gold:#b7791f; --gold-light:#fef3c7; --blue:#1d4ed8; --blue-light:#dbeafe;
+      --purple:#6d28d9; --purple-light:#ede9fe; --rose:#be185d; --rose-light:#fce7f3;
+      --teal:#0f766e; --teal-light:#ccfbf1;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);font-size:15px;line-height:1.6;overflow-x:hidden;}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 5%;z-index:500;box-shadow:0 1px 12px rgba(0,0,0,0.05);}
+    .nav-left{display:flex;align-items:center;gap:14px;}
+    .hamburger{width:36px;height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;border-radius:8px;border:1.5px solid var(--border);background:transparent;transition:background 0.2s;flex-shrink:0;}
+    .hamburger:hover{background:var(--paper-warm);}
+    .hamburger span{display:block;width:16px;height:1.5px;background:var(--ink);border-radius:2px;transition:transform 0.25s,opacity 0.25s;}
+    .hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+    .hamburger.open span:nth-child(2){opacity:0;}
+    .hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .logo-icon{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+    .logo-icon svg{width:20px;height:20px;fill:white;}
+    .logo-text{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--ink);}
+    .logo-text span{color:var(--accent);}
+    .nav-links{display:flex;align-items:center;gap:6px;list-style:none;}
+    .nav-links a{text-decoration:none;color:var(--ink-soft);font-size:0.87rem;font-weight:500;padding:8px 13px;border-radius:8px;transition:background 0.2s,color 0.2s;}
+    .nav-links a:hover{background:var(--paper-warm);color:var(--ink);}
+    .nav-links .btn-login{background:var(--accent-light);color:var(--accent);border-radius:8px;padding:8px 18px;font-weight:600;}
+    .nav-links .btn-login:hover{background:var(--accent-mid);color:white;}
+
+    /* SIDEBAR */
+    .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.25);z-index:400;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+    .sidebar-overlay.visible{opacity:1;pointer-events:all;}
+    .sidebar{position:fixed;top:var(--nav-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);z-index:450;padding:24px 0;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;}
+    .sidebar.open{transform:translateX(0);}
+    .sidebar-section{padding:0 16px;margin-bottom:8px;}
+    .sidebar-section-label{font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-muted);padding:6px 8px 8px;}
+    .sidebar a{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink-soft);font-size:0.88rem;font-weight:500;padding:9px 12px;border-radius:9px;transition:background 0.15s,color 0.15s;margin-bottom:2px;}
+    .sidebar a:hover,.sidebar a.active{background:var(--accent-light);color:var(--accent);}
+    .sidebar a .s-icon{font-size:1rem;width:20px;text-align:center;}
+    .sidebar-divider{border:none;border-top:1px solid var(--border);margin:10px 16px;}
+
+    /* MAIN */
+    main{padding-top:calc(var(--nav-h) + 40px);padding-bottom:80px;max-width:940px;margin:0 auto;padding-left:24px;padding-right:24px;}
+
+    /* HERO */
+    .tips-hero{background:linear-gradient(135deg,var(--accent-dark) 0%,var(--accent) 60%,var(--accent-mid) 100%);border-radius:20px;padding:52px 44px;margin-bottom:36px;position:relative;overflow:hidden;}
+    .tips-hero::before{content:'₹';position:absolute;right:40px;top:50%;transform:translateY(-50%);font-size:160px;font-family:'DM Serif Display',serif;color:rgba(255,255,255,0.06);line-height:1;}
+    .tips-hero h1{font-family:'DM Serif Display',serif;font-size:clamp(1.9rem,4vw,2.7rem);color:white;letter-spacing:-0.03em;margin-bottom:10px;position:relative;z-index:1;}
+    .tips-hero p{color:rgba(255,255,255,0.78);font-size:0.96rem;max-width:540px;line-height:1.7;position:relative;z-index:1;}
+    .hero-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;position:relative;z-index:1;}
+    .hero-badge{background:rgba(255,255,255,0.15);color:white;font-size:0.78rem;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);}
+
+    /* SEARCH */
+    .search-wrap{position:relative;margin-bottom:32px;}
+    .search-input{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:13px 18px 13px 46px;font-family:'DM Sans',sans-serif;font-size:0.92rem;color:var(--ink);background:var(--white);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+    .search-input:focus{border-color:var(--accent-mid);box-shadow:0 0 0 3px rgba(82,183,136,0.15);}
+    .search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none;}
+    .search-results{margin-top:8px;display:none;background:var(--white);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+    .sr-item{padding:11px 16px;font-size:0.86rem;color:var(--ink-soft);cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+    .sr-item:last-child{border-bottom:none;}
+    .sr-item:hover{background:var(--accent-light);color:var(--accent);}
+    .sr-cat{font-size:0.72rem;color:var(--ink-muted);margin-left:auto;}
+
+    /* QUICK NAV TABS */
+    .tab-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px;}
+    .tab-btn{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:9px 16px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+    .tab-btn:hover,.tab-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent);}
+
+    /* SECTION */
+    .tip-section{margin-bottom:56px;}
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+    .section-icon-wrap{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+    .section-title{font-family:'DM Serif Display',serif;font-size:1.65rem;color:var(--ink);letter-spacing:-0.02em;}
+    .section-desc{font-size:0.88rem;color:var(--ink-muted);margin-bottom:24px;padding-left:62px;}
+
+    /* CARD GRID */
+    .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
+    .card-grid.single{grid-template-columns:1fr;}
+    .card-grid.two{grid-template-columns:1fr 1fr;}
+    @media(max-width:620px){.card-grid.two{grid-template-columns:1fr;}}
+
+    /* TIP CARD */
+    .tip-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;transition:box-shadow 0.2s,transform 0.2s,border-color 0.2s;cursor:pointer;}
+    .tip-card:hover{box-shadow:0 6px 24px rgba(0,0,0,0.07);transform:translateY(-2px);}
+    .tip-card-head{padding:18px 20px 14px;display:flex;align-items:flex-start;gap:13px;}
+    .tip-card-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+    .tip-card-meta{flex:1;}
+    .tip-card-tag{font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:4px;}
+    .tip-card-title{font-size:1rem;font-weight:700;color:var(--ink);line-height:1.3;}
+    .tip-card-body{padding:0 20px 6px 20px;border-top:1px solid var(--border);}
+    .tip-card-body p{font-size:0.85rem;color:var(--ink-soft);line-height:1.7;margin-top:12px;margin-bottom:10px;}
+    .tip-example{background:var(--paper-warm);border-radius:10px;padding:12px 14px;margin-bottom:12px;}
+    .tip-example-label{font-size:0.7rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+    .tip-example p{font-size:0.82rem;color:var(--ink-soft);line-height:1.6;margin:0;}
+    .tip-highlight{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:8px 12px;font-size:0.8rem;color:var(--accent-dark);margin-bottom:12px;line-height:1.6;}
+    .tip-warn{background:var(--gold-light);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:8px 12px;font-size:0.8rem;color:#78350f;margin-bottom:12px;line-height:1.6;}
+    .tip-tags{display:flex;flex-wrap:wrap;gap:6px;padding:0 20px 16px;}
+    .tag{font-size:0.7rem;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid;}
+
+    /* SCHEME TABLE */
+    .scheme-table{width:100%;border-collapse:collapse;font-size:0.83rem;margin-top:16px;margin-bottom:16px;}
+    .scheme-table th{background:var(--paper-warm);color:var(--ink-soft);font-weight:600;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);}
+    .scheme-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--ink-soft);vertical-align:top;line-height:1.5;}
+    .scheme-table tr:last-child td{border-bottom:none;}
+    .scheme-table tr:hover td{background:var(--paper-warm);}
+    .rate-badge{display:inline-block;background:var(--accent-light);color:var(--accent-dark);font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:6px;}
+
+    /* MENTOR BOX */
+    .mentor-box{background:linear-gradient(135deg,var(--accent-dark),var(--accent));border-radius:16px;padding:28px 30px;color:white;margin-bottom:20px;position:relative;overflow:hidden;}
+    .mentor-box::after{content:'🧑‍🏫';position:absolute;right:24px;bottom:-8px;font-size:4rem;opacity:0.2;}
+    .mentor-box h3{font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:8px;}
+    .mentor-box p{font-size:0.87rem;color:rgba(255,255,255,0.82);line-height:1.7;}
+
+    /* STEPS */
+    .steps-list{display:flex;flex-direction:column;gap:0;}
+    .step-item{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);}
+    .step-item:last-child{border-bottom:none;}
+    .step-num{width:32px;height:32px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0;margin-top:2px;}
+    .step-content h4{font-size:0.92rem;font-weight:700;color:var(--ink);margin-bottom:4px;}
+    .step-content p{font-size:0.83rem;color:var(--ink-soft);line-height:1.6;}
+
+    /* COMPARE TABLE */
+    .compare-wrap{overflow-x:auto;margin-top:16px;}
+    .compare-table{width:100%;border-collapse:collapse;font-size:0.82rem;min-width:500px;}
+    .compare-table th{padding:10px 14px;text-align:left;font-weight:700;border-bottom:2px solid var(--border);color:var(--ink-soft);}
+    .compare-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;}
+    .compare-table tr:hover td{background:var(--paper-warm);}
+    .check{color:var(--accent);font-weight:700;}
+    .cross{color:var(--danger);}
+
+    /* ACCORDION */
+    .accord-item{border:1.5px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+    .accord-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;cursor:pointer;gap:12px;}
+    .accord-head:hover{background:var(--paper-warm);}
+    .accord-title{font-size:0.9rem;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:10px;}
+    .accord-chev{font-size:0.75rem;color:var(--ink-muted);transition:transform 0.25s;flex-shrink:0;}
+    .accord-chev.open{transform:rotate(180deg);}
+    .accord-body{display:none;padding:0 18px 16px;border-top:1px solid var(--border);}
+    .accord-body.open{display:block;}
+    .accord-body p{font-size:0.86rem;color:var(--ink-soft);line-height:1.7;margin-top:12px;}
+
+    /* PILL COLORS */
+    .green{background:var(--accent-light);color:var(--accent-dark);border-color:var(--accent-mid);}
+    .gold{background:var(--gold-light);color:var(--gold);border-color:#f59e0b;}
+    .blue{background:var(--blue-light);color:var(--blue);border-color:#93c5fd;}
+    .purple{background:var(--purple-light);color:var(--purple);border-color:#c4b5fd;}
+    .rose{background:var(--rose-light);color:var(--rose);border-color:#fbcfe8;}
+    .teal{background:var(--teal-light);color:var(--teal);border-color:#5eead4;}
+
+    /* BIG NUMBER */
+    .stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+    .stat-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px 16px;text-align:center;}
+    .stat-num{font-family:'DM Serif Display',serif;font-size:1.8rem;color:var(--accent);letter-spacing:-0.03em;}
+    .stat-label{font-size:0.75rem;color:var(--ink-muted);margin-top:3px;line-height:1.4;}
+
+    /* FOOTER */
+    footer{background:var(--ink);color:#888;padding:28px 5%;}
+    .footer-bottom{max-width:940px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+    .footer-bottom p{font-size:0.78rem;color:#555;}
+    .footer-logo-text{font-family:'DM Serif Display',serif;font-size:1rem;color:#e8e5df;}
+    .footer-logo-text span{color:var(--accent-mid);}
+
+    /* ANIMATIONS */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    .tips-hero{animation:fadeUp 0.45s ease;}
+    .tip-section{animation:fadeUp 0.5s ease;}
+
+    /* DISCLAIMER */
+    .disclaimer{background:var(--gold-light);border:1.5px solid #f59e0b;border-radius:12px;padding:14px 18px;font-size:0.8rem;color:#78350f;margin-bottom:32px;line-height:1.6;}
+
+    @media(max-width:500px){
+      .tips-hero{padding:32px 22px;}
+      .section-desc{padding-left:0;}
+      main{padding-left:16px;padding-right:16px;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Main</div>
+    <a href="dashboard.html"><span class="s-icon">📊</span> Dashboard</a>
+    <a href="profile.html"><span class="s-icon">👤</span> My Profile</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Tools</div>
+    <a href="smartbalace.html"><span class="s-icon">🧮</span> Smart Balance</a>
+    <a href="savinggoal.html"><span class="s-icon">🎯</span> Savings Goals</a>
+    <a href="emergencyf.html"><span class="s-icon">🛡️</span> Emergency Fund</a>
+    <a href="whatif.html"><span class="s-icon">📈</span> What-If Simulation</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Learn</div>
+    <a href="guide.html"><span class="s-icon">📖</span> User Guide</a>
+    <a href="moneytips.html" class="active"><span class="s-icon">💡</span> Money Tips</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <a href="contact.html"><span class="s-icon">💬</span> Contact Us</a>
+  </div>
+</aside>
+
+<nav>
+  <div class="nav-left">
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    <a href="dashboard.html" class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H9l3-3 3 3h-2v4z"/></svg></div>
+      <span class="logo-text">Budget<span>Buddy</span></span>
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="guide.html">User Guide</a></li>
+    <li><a href="login.html" class="btn-login">Login</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <div class="tips-hero">
+    <h1>💡 Money Tips & Financial Education</h1>
+    <p>Your friendly mentor for everything money — banking, savings, investments, government schemes, and more. Written in plain language, just for you.</p>
+    <div class="hero-badges">
+      <span class="hero-badge">🎓 For students & freshers</span>
+      <span class="hero-badge">🇮🇳 India-focused</span>
+      <span class="hero-badge">📚 100% free knowledge</span>
+      <span class="hero-badge">✅ Updated 2024–25</span>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ <strong>Disclaimer:</strong> This page is for educational purposes only. Interest rates and scheme details change — always verify on the official government or bank website before investing. BudgetBuddy is not a SEBI-registered advisor.
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" placeholder="Search any topic… e.g. 'FD', 'PPF', 'SIP', 'SC ST scheme'" id="searchInput" oninput="doSearch(this.value)"/>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <!-- QUICK TABS -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="scrollTo('#banking')">🏦 Banking</button>
+    <button class="tab-btn" onclick="scrollTo('#investments')">📈 Investments</button>
+    <button class="tab-btn" onclick="scrollTo('#govt-schemes')">🏛️ Govt Schemes</button>
+    <button class="tab-btn" onclick="scrollTo('#post-office')">📮 Post Office</button>
+    <button class="tab-btn" onclick="scrollTo('#insurance')">🛡️ Insurance</button>
+    <button class="tab-btn" onclick="scrollTo('#sc-st-obc')">🤝 SC/ST/OBC</button>
+    <button class="tab-btn" onclick="scrollTo('#tax')">📋 Tax & ITR</button>
+    <button class="tab-btn" onclick="scrollTo('#golden-rules')">🌟 Golden Rules</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 1: BANKING BASICS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="tip-section" id="banking">
+    <div class="section-header">
+      <div class="section-icon-wrap" style="background:var(--blue-light)">🏦</div>
+      <div class="section-title">Banking Basics</div>
+    </div>
+    <p class="section-desc">Everything you need to know about bank accounts, interest, and everyday banking — explained simply.</p>
+
+    <div class="card-grid">
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--blue-light)">💳</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--blue)">Must Know</div>
+            <div class="tip-card-title">Savings Account vs Current Account</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p><strong>Savings Account</strong> is for everyday people — you park your money here and earn interest (usually 2.5%–7% per year). <strong>Current Account</strong> is for businesses — unlimited transactions but no interest earned.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Priya is a college student. She opens a <strong>Savings Account</strong> with SBI and deposits her ₹5,000 pocket money. She earns ₹125–₹350 interest per year just for keeping money there. A shopkeeper opens a Current Account to handle hundreds of daily transactions.</p>
+          </div>
+          <div class="tip-highlight">✅ As a student, always open a <strong>zero-balance savings account</strong> — SBI Basic Savings, Kotak 811, or HDFC Basic are great options. No minimum balance required!</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Beginner</span><span class="tag blue">Banking</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--gold-light)">📊</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--gold)">Core Concept</div>
+            <div class="tip-card-title">Simple Interest vs Compound Interest</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p><strong>Simple Interest (SI)</strong> = you earn interest only on the original amount. <strong>Compound Interest (CI)</strong> = you earn interest on the original amount PLUS the interest you already earned. CI is more powerful!</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Rahul invests ₹10,000 at 10% for 3 years.<br>
+            SI = ₹10,000 × 10% × 3 = <strong>₹3,000 interest</strong><br>
+            CI = ₹10,000 → ₹11,000 → ₹12,100 → <strong>₹13,310 (₹3,310 interest)</strong><br>
+            Compound interest gave him ₹310 more!</p>
+          </div>
+          <div class="tip-highlight">✅ Always look for accounts and investments that offer <strong>compound interest</strong>. The longer you stay invested, the more powerful compounding becomes — this is called the "8th wonder of the world"!</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Beginner</span><span class="tag gold">Concept</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--accent-light)">🏧</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--accent)">Banking</div>
+            <div class="tip-card-title">Fixed Deposit (FD)</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>A Fixed Deposit is like locking your money in a bank safe for a fixed period (7 days to 10 years) and getting a guaranteed interest rate. The longer you lock, the higher the rate. FDs are 100% safe since deposits up to ₹5 lakh are insured by <strong>DICGC</strong>.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Arjun has ₹20,000 saved after internship. He puts it in a 1-year FD at 7.1% (SBI rate). After 1 year he gets back ₹20,000 + ₹1,420 = <strong>₹21,420</strong>. Zero risk, guaranteed returns!</p>
+          </div>
+          <div class="tip-highlight">✅ Use FD for money you won't need for 6–12 months. Senior citizens get 0.5% extra interest. Best rates currently: Small Finance Banks (8%–9%).</div>
+          <div class="tip-warn">⚠️ Breaking an FD early usually costs 0.5%–1% penalty. Only invest money you won't need urgently.</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Safe</span><span class="tag blue">Banking</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--teal-light)">🔄</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--teal)">Banking</div>
+            <div class="tip-card-title">Recurring Deposit (RD)</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>An RD lets you deposit a <strong>fixed small amount every month</strong> instead of one large lump sum. Great for students who want to save regularly. Interest rates are similar to FD.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Sneha deposits ₹500 every month in an RD for 12 months at 6.5%. After 1 year she has deposited ₹6,000 but gets back ₹6,230 — she earned ₹230 just by saving a small amount each month!</p>
+          </div>
+          <div class="tip-highlight">✅ RD is the perfect "first investment" for students. Start with as little as ₹100/month. It builds the saving habit AND earns you money.</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Beginner</span><span class="tag teal">Monthly Savings</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--rose-light)">⚡</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--rose)">Important</div>
+            <div class="tip-card-title">UPI, NEFT, RTGS, IMPS — What's the Difference?</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <div class="compare-wrap">
+            <table class="compare-table">
+              <tr><th>Method</th><th>Speed</th><th>Limit</th><th>Best For</th></tr>
+              <tr><td><strong>UPI</strong></td><td>Instant</td><td>₹1–₹1L/txn</td><td>Daily payments</td></tr>
+              <tr><td><strong>IMPS</strong></td><td>Instant, 24/7</td><td>Up to ₹5L</td><td>Urgent transfers</td></tr>
+              <tr><td><strong>NEFT</strong></td><td>30 min batches</td><td>No limit</td><td>Large transfers</td></tr>
+              <tr><td><strong>RTGS</strong></td><td>Real-time</td><td>Min ₹2L</td><td>Very large amounts</td></tr>
+            </table>
+          </div>
+          <div class="tip-highlight">✅ For everyday life, UPI is your best friend — free, instant, works 24/7. Use NEFT/RTGS only for large bank-to-bank transfers.</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Beginner</span><span class="tag blue">Digital Banking</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--purple-light)">📉</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--purple)">Must Know</div>
+            <div class="tip-card-title">CIBIL Score / Credit Score</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Your CIBIL score (300–900) is your financial "report card." Banks check this before giving you any loan or credit card. A score above 750 means you're trusted; below 600 means banks may reject your loan.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Vikram needs a ₹2 lakh education loan. His CIBIL score is 780 (Excellent) — the bank approves it at 9% interest. His friend Rohit has a score of 580 because he missed credit card payments — the bank rejects his loan application.</p>
+          </div>
+          <div class="tip-highlight">✅ Build your CIBIL score early: get a small credit card, use it for minor purchases, and ALWAYS pay the full bill on time. Check your free score on CIBIL.com or Paytm once a year.</div>
+          <div class="tip-warn">⚠️ Never miss an EMI or credit card due date. One missed payment can drop your score by 50–100 points!</div>
+        </div>
+        <div class="tip-tags"><span class="tag purple">Credit</span><span class="tag gold">Career Impact</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 2: INVESTMENTS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="tip-section" id="investments">
+    <div class="section-header">
+      <div class="section-icon-wrap" style="background:var(--accent-light)">📈</div>
+      <div class="section-title">Investments — Make Your Money Work</div>
+    </div>
+    <p class="section-desc">The earlier you start investing, the wealthier you become. Here's every investment option explained simply.</p>
+
+    <div class="mentor-box">
+      <h3>🧑‍🏫 Mentor's Golden Advice</h3>
+      <p>Investing is not gambling. It's putting your money to work so that it grows while you sleep. The biggest mistake young Indians make is waiting to invest "when I have more money." Start with ₹500/month today. In 20 years, at 12% returns, ₹500/month becomes <strong>₹4.99 lakh</strong>. Start at 30 instead of 20, and it becomes only ₹1.98 lakh. <strong>Time is your biggest asset.</strong></p>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-num">₹500</div><div class="stat-label">Minimum SIP you can start with today</div></div>
+      <div class="stat-card"><div class="stat-num">12%</div><div class="stat-label">Average long-term equity mutual fund return</div></div>
+      <div class="stat-card"><div class="stat-num">7.1%</div><div class="stat-label">PPF interest rate (2024–25)</div></div>
+      <div class="stat-card"><div class="stat-num">₹1.5L</div><div class="stat-label">Tax saved per year under 80C</div></div>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--accent-light)">🔁</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--accent)">Most Popular</div>
+            <div class="tip-card-title">SIP — Systematic Investment Plan</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>SIP means investing a <strong>fixed amount every month</strong> into a mutual fund automatically. You don't need to time the market. When markets are down, your ₹500 buys more units. When markets are up, your units are worth more. This is called <strong>Rupee Cost Averaging</strong>.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Pooja starts a ₹1,000/month SIP in a Nifty 50 index fund at age 22. She invests for 10 years (total ₹1.2 lakh invested). At 12% average return, she has ₹2.32 lakh at age 32 — nearly <strong>double her investment</strong>!</p>
+          </div>
+          <div class="tip-highlight">✅ Best apps to start SIP: Groww, Zerodha Coin, Paytm Money — all free, zero commission. Start with Nifty 50 index fund if you're a beginner. No knowledge needed!</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Beginner Friendly</span><span class="tag gold">High Returns</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--gold-light)">🏛️</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--gold)">Government Backed</div>
+            <div class="tip-card-title">PPF — Public Provident Fund</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>PPF is a <strong>government-guaranteed savings scheme</strong> with 15-year lock-in. The interest is <strong>completely tax-free</strong>. You can invest ₹500 to ₹1.5 lakh per year. This is one of the safest long-term investments in India.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Amit invests ₹1,000/month in PPF for 15 years = ₹1.8 lakh invested. At 7.1% compounded, he gets back <strong>₹3.25 lakh tax-free</strong>. He also saves ₹3,120 per year in income tax under Section 80C!</p>
+          </div>
+          <div class="tip-highlight">✅ Open PPF at any post office, SBI, or online via net banking. Best for: building a long-term corpus for marriage, education, or retirement. EEE tax status — Exempt at all 3 stages!</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Tax Free</span><span class="tag gold">Government Backed</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--teal-light)">🏢</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--teal)">For Salaried</div>
+            <div class="tip-card-title">EPF — Employee Provident Fund</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>When you start a salaried job, 12% of your basic salary is automatically deducted for EPF. Your <strong>employer also contributes 12%</strong>. This is a retirement fund that earns ~8.25% interest. You can't withdraw easily, but that's the point — it forces you to save!</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Neha joins a company with ₹25,000/month basic salary. Every month ₹3,000 is deducted from her salary + her company adds ₹3,000 = <strong>₹6,000 saved every month</strong> automatically towards her retirement. After 5 years: ~₹4.5 lakh saved!</p>
+          </div>
+          <div class="tip-highlight">✅ Never withdraw EPF when switching jobs — transfer it using UAN (Universal Account Number). Withdrawing early means losing your employer's contribution and paying tax!</div>
+        </div>
+        <div class="tip-tags"><span class="tag teal">Salaried</span><span class="tag green">Auto Saving</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--blue-light)">📊</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--blue)">Investment</div>
+            <div class="tip-card-title">Mutual Funds — Types Explained</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <div class="compare-wrap">
+            <table class="compare-table">
+              <tr><th>Type</th><th>Risk</th><th>Returns</th><th>Best For</th></tr>
+              <tr><td>Liquid Fund</td><td>Very Low</td><td>6–7%</td><td>Emergency fund, 1–3 months</td></tr>
+              <tr><td>Debt Fund</td><td>Low</td><td>6–8%</td><td>1–3 year goals</td></tr>
+              <tr><td>Balanced/Hybrid</td><td>Medium</td><td>9–11%</td><td>3–5 year goals</td></tr>
+              <tr><td>Large Cap Equity</td><td>Medium-High</td><td>10–13%</td><td>5+ years, stable</td></tr>
+              <tr><td>Mid/Small Cap</td><td>High</td><td>13–18%</td><td>7+ years, aggressive</td></tr>
+              <tr><td>Index Fund</td><td>Medium</td><td>11–13%</td><td>Beginners, 5+ years</td></tr>
+            </table>
+          </div>
+          <div class="tip-highlight">✅ Rule of thumb: Higher risk = higher returns but only over LONG periods. For beginners, start with an <strong>Index Fund</strong> — low cost, no fund manager needed, tracks Nifty 50.</div>
+        </div>
+        <div class="tip-tags"><span class="tag blue">All Risk Levels</span><span class="tag gold">Returns Vary</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--purple-light)">📉</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--purple)">Advanced</div>
+            <div class="tip-card-title">Stocks — Direct Equity Investing</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Buying a stock means buying a <strong>tiny piece of a company</strong>. If the company grows, your stock value goes up. If it does badly, it goes down. Stocks can give very high returns but are volatile (go up and down a lot).</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Ravi bought 10 shares of Infosys at ₹1,200 each in 2020 (₹12,000 total). By 2023, the price was ₹1,500 — his investment became <strong>₹15,000</strong> (25% profit) PLUS he got ₹600 in dividends. Total gain: ₹3,600!</p>
+          </div>
+          <div class="tip-warn">⚠️ Never invest in stocks money you need in the next 1–2 years. Study a company's fundamentals (P/E ratio, revenue growth, debt) before buying. Never invest on tips or WhatsApp forwards!</div>
+          <div class="tip-highlight">✅ Open a Demat account with Zerodha, Groww, or Upstox. Start small — buy 1 share of a company you believe in and learn from experience.</div>
+        </div>
+        <div class="tip-tags"><span class="tag purple">Advanced</span><span class="tag rose">High Risk</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--rose-light)">🏠</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--rose)">Long Term</div>
+            <div class="tip-card-title">NPS — National Pension System</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>NPS is a <strong>government pension scheme</strong> where you invest regularly and get a pension after age 60. It invests in both equity and debt. You get extra tax benefit of ₹50,000 under Section 80CCD(1B) — over and above the ₹1.5 lakh 80C limit!</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Deepak, 25, invests ₹2,000/month in NPS for 35 years until age 60. At ~10% average return, he accumulates ~₹76 lakh. He gets ₹30 lakh as lump sum + monthly pension from the remaining ₹46 lakh. <strong>Never run out of money in retirement!</strong></p>
+          </div>
+          <div class="tip-highlight">✅ Open NPS online at eNPS.nsdl.com in 10 minutes. Even ₹1,000/month contribution from age 22 creates a comfortable retirement corpus.</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Tax Saving</span><span class="tag gold">Retirement</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 3: GOVERNMENT SCHEMES -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="tip-section" id="govt-schemes">
+    <div class="section-header">
+      <div class="section-icon-wrap" style="background:var(--gold-light)">🏛️</div>
+      <div class="section-title">Government Schemes — Free Money You Might Be Missing!</div>
+    </div>
+    <p class="section-desc">The Indian government has hundreds of schemes designed to help you. Most people never claim these benefits. Know your rights!</p>
+
+    <div class="card-grid single">
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--gold-light)">🏦</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--gold)">Banking Scheme</div>
+            <div class="tip-card-title">Jan Dhan Yojana (PMJDY) — Zero Balance Account + Free Insurance</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Under Pradhan Mantri Jan Dhan Yojana, <strong>any Indian citizen</strong> can open a zero-balance bank account and get: free RuPay debit card, ₹2 lakh accident insurance, ₹30,000 life insurance (Jeevan Jyoti), overdraft facility of ₹10,000 after 6 months of good usage.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Sunita from a village opens a Jan Dhan account at her nearest bank with just her Aadhaar card. She gets a free RuPay card. If she meets with an accident, her family gets ₹2 lakh — completely free. She also receives her LPG subsidy, MNREGA wages directly in this account.</p>
+          </div>
+          <div class="tip-highlight">✅ How to apply: Visit any bank branch with Aadhaar + PAN (or just Aadhaar if no PAN). Completely free. Available at all government and private banks.</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Free</span><span class="tag gold">All Citizens</span></div>
+      </div>
+    </div>
+
+    <div class="card-grid two" style="margin-top:18px;">
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--blue-light)">🛡️</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--blue)">Government Insurance</div>
+            <div class="tip-card-title">PMSBY — Accident Insurance @ ₹20/year</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p><strong>Pradhan Mantri Suraksha Bima Yojana</strong> — Accident insurance of ₹2 lakh for just ₹20 per year (less than the cost of one samosa!). Available to anyone aged 18–70 with a bank account. Premium is auto-debited from your account every May.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Raju, a 21-year-old college student, pays ₹20/year. If he meets an accident and loses a hand, he gets ₹1 lakh. In case of death or complete disability, his family gets ₹2 lakh. For ₹20, the protection is enormous.</p>
+          </div>
+          <div class="tip-highlight">✅ Enroll via your bank's net banking, mobile app, or branch. Takes 2 minutes. Everyone with a bank account should do this TODAY.</div>
+        </div>
+        <div class="tip-tags"><span class="tag blue">₹20/year</span><span class="tag green">Everyone</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--rose-light)">💖</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--rose)">Government Insurance</div>
+            <div class="tip-card-title">PMJJBY — Life Insurance @ ₹436/year</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p><strong>Pradhan Mantri Jeevan Jyoti Bima Yojana</strong> — ₹2 lakh life insurance for just ₹436/year. If the account holder dies for any reason (accident, illness, natural causes), the family gets ₹2 lakh. Ages 18–50 with a bank account can join.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Ramesh, the sole earner in his family, pays ₹436/year (₹36.3/month). He sadly passes away from illness. His wife and two children receive ₹2 lakh from the government — giving them time to adjust financially without going into debt.</p>
+          </div>
+          <div class="tip-highlight">✅ If you have dependents (parents, siblings), this is one of the smartest ₹436 you'll spend. Enroll via bank net banking or branch.</div>
+        </div>
+        <div class="tip-tags"><span class="tag rose">₹436/year</span><span class="tag green">18-50 age</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--purple-light)">🎓</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--purple)">Education</div>
+            <div class="tip-card-title">PM Vidya Lakshmi — Education Loans</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>A government portal (vidyalakshmi.co.in) where you can apply to <strong>multiple banks simultaneously</strong> for education loans. Loans up to ₹7.5 lakh need no collateral. Loans above that need collateral. Interest subsidy available for EWS families during course + 1 year moratorium after completion.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Kavya wants to pursue MBA at ₹8 lakh total cost. She applies on Vidya Lakshmi, gets loan at 10.5% interest. During 2-year course, government pays the interest (subsidy for EWS). She only starts repaying 1 year after getting a job.</p>
+          </div>
+          <div class="tip-highlight">✅ Apply at vidyalakshmi.co.in — government portal, completely free to apply. Compare offers from SBI, Bank of Baroda, Canara Bank etc. all in one place.</div>
+        </div>
+        <div class="tip-tags"><span class="tag purple">Students</span><span class="tag blue">Education Loan</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--teal-light)">🏠</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--teal)">Housing</div>
+            <div class="tip-card-title">PMAY — Home Loan Subsidy</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p><strong>Pradhan Mantri Awas Yojana</strong> — If you're taking a home loan for your first house, the government subsidises your interest by 3%–6.5% depending on your income. This can save you <strong>₹2–6 lakh</strong> on a typical home loan!</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Ankit earns ₹18 lakh/year. He takes a ₹35 lakh home loan. Under PMAY, he gets 3% interest subsidy — his effective rate drops from 8.5% to 5.5%. Over 20 years, he saves approximately ₹5.4 lakh in interest!</p>
+          </div>
+          <div class="tip-highlight">✅ Income limit for EWS: ₹3 lakh/year, LIG: ₹6 lakh, MIG-I: ₹12 lakh, MIG-II: ₹18 lakh. Apply through your bank when taking a home loan — they handle the paperwork.</div>
+        </div>
+        <div class="tip-tags"><span class="tag teal">First Home</span><span class="tag green">Interest Subsidy</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--gold-light)">💼</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--gold)">Startup / Business</div>
+            <div class="tip-card-title">PM Mudra Yojana — Business Loan Up to ₹10 Lakh</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Want to start a small business? MUDRA (Micro Units Development and Refinance Agency) gives loans up to ₹10 lakh with <strong>no collateral needed</strong>. Three categories: Shishu (up to ₹50K), Kishore (₹50K–₹5L), Tarun (₹5L–₹10L).</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Meena wants to open a tiffin service. She gets a ₹2 lakh Kishore MUDRA loan at 10% interest from a bank — no collateral, no guarantor. She buys utensils, packaging, and a scooter. Within 18 months she's earning ₹15,000/month profit and repaid the loan.</p>
+          </div>
+          <div class="tip-highlight">✅ Apply at any bank, NBFC, or microfinance institution. No processing fee for Shishu loans. Women entrepreneurs get priority and slightly lower rates.</div>
+        </div>
+        <div class="tip-tags"><span class="tag gold">Business</span><span class="tag green">No Collateral</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--accent-light)">👴</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--accent)">Pension</div>
+            <div class="tip-card-title">APY — Atal Pension Yojana</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>A government pension scheme for the <strong>unorganised sector</strong> (shopkeepers, drivers, farmers, freelancers). You contribute a small amount monthly, and after age 60, you get a guaranteed pension of ₹1,000–₹5,000/month for life. Government also contributes.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Ravi, age 25, is a freelance photographer. He pays ₹376/month in APY. After age 60, he receives ₹5,000/month pension FOR LIFE. If he dies, his spouse gets the pension. If both die, the nominee gets ₹8.5 lakh!</p>
+          </div>
+          <div class="tip-highlight">✅ Available for ages 18–40 who are NOT income tax payers. Enroll via your bank's net banking or app. The younger you join, the lower the monthly contribution.</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Pension</span><span class="tag teal">Unorganised Sector</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 4: POST OFFICE SCHEMES -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="tip-section" id="post-office">
+    <div class="section-header">
+      <div class="section-icon-wrap" style="background:var(--rose-light)">📮</div>
+      <div class="section-title">Post Office Schemes — India's Safest Investments</div>
+    </div>
+    <p class="section-desc">Post office schemes are 100% government-guaranteed — your money is safer here than in any bank. Available at 1.5 lakh+ post offices across India.</p>
+
+    <div class="tip-card" style="margin-bottom:18px;">
+      <div class="tip-card-head">
+        <div class="tip-card-icon" style="background:var(--rose-light)">📮</div>
+        <div class="tip-card-meta">
+          <div class="tip-card-tag" style="color:var(--rose)">2024–25 Rates</div>
+          <div class="tip-card-title">All Post Office Schemes at a Glance</div>
+        </div>
+      </div>
+      <div class="tip-card-body">
+        <div class="compare-wrap">
+          <table class="scheme-table">
+            <tr><th>Scheme</th><th>Interest Rate</th><th>Min Investment</th><th>Tenure</th><th>Tax Benefit</th></tr>
+            <tr><td><strong>Post Office Savings Account</strong></td><td><span class="rate-badge">4.0%</span></td><td>₹500</td><td>No lock-in</td><td>Interest up to ₹10K tax-free</td></tr>
+            <tr><td><strong>5-Year RD</strong></td><td><span class="rate-badge">6.7%</span></td><td>₹100/month</td><td>5 years</td><td>No</td></tr>
+            <tr><td><strong>Post Office TD (1 yr)</strong></td><td><span class="rate-badge">6.9%</span></td><td>₹1,000</td><td>1/2/3/5 yr</td><td>5-yr qualifies 80C</td></tr>
+            <tr><td><strong>Post Office TD (5 yr)</strong></td><td><span class="rate-badge">7.5%</span></td><td>₹1,000</td><td>5 years</td><td>Yes, 80C</td></tr>
+            <tr><td><strong>Monthly Income Scheme (MIS)</strong></td><td><span class="rate-badge">7.4%</span></td><td>₹1,000</td><td>5 years</td><td>No</td></tr>
+            <tr><td><strong>Senior Citizen Savings Scheme</strong></td><td><span class="rate-badge">8.2%</span></td><td>₹1,000</td><td>5 years</td><td>Yes, 80C</td></tr>
+            <tr><td><strong>PPF</strong></td><td><span class="rate-badge">7.1%</span></td><td>₹500/year</td><td>15 years</td><td>Yes, EEE</td></tr>
+            <tr><td><strong>Sukanya Samriddhi (girls)</strong></td><td><span class="rate-badge">8.2%</span></td><td>₹250/year</td><td>21 years</td><td>Yes, EEE</td></tr>
+            <tr><td><strong>Kisan Vikas Patra (KVP)</strong></td><td><span class="rate-badge">7.5%</span></td><td>₹1,000</td><td>~9.5 years</td><td>No</td></tr>
+            <tr><td><strong>NSC</strong></td><td><span class="rate-badge">7.7%</span></td><td>₹1,000</td><td>5 years</td><td>Yes, 80C</td></tr>
+          </table>
+        </div>
+        <div class="tip-highlight">✅ <strong>Sukanya Samriddhi</strong> (8.2%) is the highest rate for a girl child account — parents should open this immediately after daughter's birth. <strong>SCSS</strong> (8.2%) is best for senior citizens above 60.</div>
+      </div>
+    </div>
+
+    <div class="card-grid two">
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--rose-light)">👧</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--rose)">For Girls</div>
+            <div class="tip-card-title">Sukanya Samriddhi Yojana (SSY)</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>The <strong>best savings scheme</strong> for parents of girl children (up to age 10). Invest ₹250 to ₹1.5 lakh/year. Earns 8.2% — higher than any FD. Account matures when girl turns 21. 50% withdrawal allowed at age 18 for education or marriage. <strong>Completely tax-free (EEE).</strong></p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Ram opens SSY for his 3-year-old daughter. He invests ₹5,000/month (₹60,000/year) for 15 years = ₹9 lakh invested. At 8.2%, when his daughter turns 21, she receives approximately <strong>₹43 lakh TAX-FREE</strong> — enough for education + marriage!</p>
+          </div>
+        </div>
+        <div class="tip-tags"><span class="tag rose">Girl Child</span><span class="tag green">Tax Free</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--gold-light)">💰</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--gold)">MIS</div>
+            <div class="tip-card-title">Post Office MIS — Monthly Income for You</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p><strong>Monthly Income Scheme</strong> — invest a lump sum and get a fixed monthly income every month. Perfect for retired parents or people who need regular cash flow. Maximum investment: ₹9 lakh (single) or ₹15 lakh (joint account). Interest rate: 7.4%.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Sunita's father retires with ₹9 lakh savings. He puts it all in MIS. Every month, he receives <br>₹9,00,000 × 7.4% ÷ 12 = <strong>₹5,550 per month</strong> guaranteed for 5 years — no stock market risk!</p>
+          </div>
+        </div>
+        <div class="tip-tags"><span class="tag gold">Monthly Income</span><span class="tag green">Safe</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 5: LIC & INSURANCE -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="tip-section" id="insurance">
+    <div class="section-header">
+      <div class="section-icon-wrap" style="background:var(--teal-light)">🛡️</div>
+      <div class="section-title">Insurance — Protect What You've Built</div>
+    </div>
+    <p class="section-desc">Insurance is not an investment — it's protection. Understand what you actually need and avoid being oversold policies you don't need.</p>
+
+    <div class="mentor-box">
+      <h3>🧑‍🏫 The Mentor's Truth About Insurance</h3>
+      <p>Most agents will try to sell you "insurance + investment" plans (endowment, money-back, ULIPs). The truth: they give poor returns AND poor coverage. The smart approach: <strong>Buy TERM insurance for protection. Invest separately in mutual funds for returns.</strong> This is called "Buy Term + Invest the Rest."</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--teal-light)">🏥</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--teal)">Most Important</div>
+            <div class="tip-card-title">Health Insurance — Must Have!</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Health insurance pays your hospital bills if you fall sick or meet with an accident. One serious illness can wipe out years of savings. For a 25-year-old, a ₹5 lakh health insurance costs only <strong>₹4,000–₹8,000/year</strong>!</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Rohit, 24, has no health insurance. He gets dengue with complications — hospital bill: ₹1.8 lakh. He had to borrow from family. His colleague Priya has a ₹5 lakh health policy for ₹5,500/year. Same hospital, same bill — she paid <strong>₹0 from her own pocket</strong>.</p>
+          </div>
+          <div class="tip-highlight">✅ Get a <strong>₹5–10 lakh floater health plan</strong> covering your whole family. Compare on PolicyBazaar. Check for: room rent limit (prefer "no capping"), list of network hospitals, pre-existing disease waiting period (choose shortest).</div>
+        </div>
+        <div class="tip-tags"><span class="tag teal">Highest Priority</span><span class="tag green">Family</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--accent-light)">👨‍👩‍👧</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--accent)">Life Insurance</div>
+            <div class="tip-card-title">Term Insurance — Pure Life Cover</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Term insurance pays a large sum to your family if YOU die. No maturity benefit if you survive (that's the point — it's pure protection, not savings). For ₹1 crore cover, a healthy 25-year-old pays only <strong>₹7,000–₹10,000/year</strong>.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Anand, 26, sole earner, buys ₹1 crore term policy for ₹8,500/year. He sadly dies in an accident at 35. His wife and children receive ₹1 crore — enough to pay off the home loan, fund the children's education, and invest for monthly income. His family's life doesn't fall apart.</p>
+          </div>
+          <div class="tip-highlight">✅ Buy term insurance if someone depends on your income (parents, spouse, children). Buy from LIC, HDFC Life, ICICI Prudential, or Max Life — check claim settlement ratio (should be above 98%).</div>
+          <div class="tip-warn">⚠️ Do NOT buy endowment/money-back LIC policies as investments. They give only 4–5% returns. Invest in mutual funds instead.</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Family Protection</span><span class="tag blue">Low Cost</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--gold-light)">🏛️</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--gold)">Government</div>
+            <div class="tip-card-title">Ayushman Bharat — Free Health Cover ₹5 Lakh</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p><strong>PM-JAY (Pradhan Mantri Jan Arogya Yojana)</strong> — If your family is in the <strong>bottom 40% income group</strong>, you get FREE health insurance of ₹5 lakh per family per year. Covers 1,500+ medical procedures. Works at all government hospitals + empanelled private hospitals.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Lakshmi's husband needs a knee replacement surgery worth ₹1.5 lakh. Her family earns ₹8,000/month. Under Ayushman Bharat, she pays ₹0. The government pays the hospital directly. She just shows the Ayushman Bharat card (Golden Card).</p>
+          </div>
+          <div class="tip-highlight">✅ Check eligibility at pmjay.gov.in or call 14555. Get your Golden Card from a Common Service Centre or empanelled hospital. Free — never pay anyone to make this card!</div>
+        </div>
+        <div class="tip-tags"><span class="tag gold">Free</span><span class="tag green">BPL Families</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 6: SC/ST/OBC/EWS SCHEMES -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="tip-section" id="sc-st-obc">
+    <div class="section-header">
+      <div class="section-icon-wrap" style="background:var(--purple-light)">🤝</div>
+      <div class="section-title">SC / ST / OBC / EWS — Special Schemes & Benefits</div>
+    </div>
+    <p class="section-desc">If you belong to SC, ST, OBC, or EWS categories, there are dozens of special financial schemes just for you. Many people miss out simply because they don't know!</p>
+
+    <div class="card-grid">
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--purple-light)">🎓</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--purple)">SC/ST</div>
+            <div class="tip-card-title">Pre & Post Matric Scholarships (Central Govt)</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>The Ministry of Social Justice provides scholarships for SC/ST students from Class 9 onwards up to PhD level. <strong>Post-Matric Scholarship</strong> covers tuition, hostel, books, and a maintenance allowance. Income limit: ₹2.5 lakh/year for SC, ₹2.5 lakh for ST.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Arun (SC student) gets admitted to B.Tech. His family income is ₹1.8 lakh. He applies for Post-Matric Scholarship — gets ₹2,250/month maintenance + full tuition fees paid by government for 4 years = saving of ₹2–4 lakh in total!</p>
+          </div>
+          <div class="tip-highlight">✅ Apply at scholarships.gov.in (National Scholarship Portal). Apply every year before October 31. Keep caste certificate, income certificate, bank details ready.</div>
+        </div>
+        <div class="tip-tags"><span class="tag purple">SC/ST</span><span class="tag blue">Education</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--blue-light)">💼</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--blue)">SC/ST Business</div>
+            <div class="tip-card-title">Stand-Up India — ₹10L to ₹1 Crore Loan</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p><strong>Stand-Up India</strong> scheme gives bank loans from ₹10 lakh to ₹1 crore to SC/ST entrepreneurs and <strong>women entrepreneurs</strong> to set up a greenfield (new) enterprise in manufacturing, services, or trading. At least 1 SC/ST and 1 woman borrower per bank branch must be served.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Sundar (SC category) wants to open a printing press. He needs ₹25 lakh. Under Stand-Up India, he gets the loan from SBI at a concessional interest rate with a 7-year repayment period. His business gets off the ground with government backing.</p>
+          </div>
+          <div class="tip-highlight">✅ Apply at standupmitra.in — free portal with handholding support. You can also walk into any bank branch and ask specifically for Stand-Up India scheme.</div>
+        </div>
+        <div class="tip-tags"><span class="tag blue">SC/ST + Women</span><span class="tag gold">Business Loan</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--teal-light)">🏘️</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--teal)">Housing</div>
+            <div class="tip-card-title">Dr. Ambedkar National Relief for SC Families</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Ministry of Social Justice provides financial assistance to SC families who are victims of atrocities under the SC/ST (Prevention of Atrocities) Act. Also, <strong>National Scheduled Castes Finance and Development Corporation (NSFDC)</strong> gives concessional loans at 5%–8% to SC families below double poverty line for income-generating activities.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Geeta's family belongs to SC category with income below ₹3 lakh. She applies to NSFDC through State Channelizing Agency (her state's SC Finance Corporation) and gets ₹1.5 lakh loan at 5% to start a beauty parlour — compared to 18%+ from moneylenders!</p>
+          </div>
+          <div class="tip-highlight">✅ Contact your state's SC/ST Finance Development Corporation for state-level schemes. Each state has additional benefits — check your state government website.</div>
+        </div>
+        <div class="tip-tags"><span class="tag teal">SC Families</span><span class="tag green">Low Interest</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--gold-light)">🌱</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--gold)">OBC / Minorities</div>
+            <div class="tip-card-title">NMDFC — Minorities Development Finance</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p><strong>National Minorities Development & Finance Corporation</strong> provides loans at subsidised rates (3%–8%) to minorities (Muslim, Christian, Sikh, Buddhist, Jain, Parsi) for education, skill development, and business. Also: <strong>OBC Finance Corporation</strong> gives similar loans to OBC families below income threshold.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Imran (Muslim, family income ₹1.2 lakh) wants to study MBBS abroad. He approaches NMDFC via State Channelizing Agency and gets an education loan at 3% interest — compared to 12% at a private bank. He saves ₹4–5 lakh in interest over the loan period.</p>
+          </div>
+          <div class="tip-highlight">✅ Apply through your state's Minority Finance Corporation. Income limit for minorities: ₹3 lakh for business loans, ₹6 lakh for education. Enquire at district collector's office.</div>
+        </div>
+        <div class="tip-tags"><span class="tag gold">Minorities & OBC</span><span class="tag blue">Low Rate</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--rose-light)">🪴</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--rose)">Tribal / ST</div>
+            <div class="tip-card-title">NSTFDC — ST Finance Corporation</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p><strong>National Scheduled Tribes Finance and Development Corporation</strong> provides concessional loans to ST individuals and self-help groups for agriculture, minor forest produce, artisan work, and small businesses. Loan up to ₹30 lakh at 4%–6% interest for ST families below double poverty line.</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Lakshmi (ST, Jharkhand) wants to sell forest honey commercially. She forms an SHG, approaches NSTFDC via Jharkhand SC/ST Finance Corporation, and gets ₹2 lakh loan at 4%. With this she buys packaging equipment and starts selling branded honey online — income tripled in 2 years.</p>
+          </div>
+          <div class="tip-highlight">✅ Contact your State Tribal Finance Corporation or ST Development Department. Also check state-specific tribal sub-plan budgets — many states have free housing, equipment, and skill training for ST communities.</div>
+        </div>
+        <div class="tip-tags"><span class="tag rose">ST Community</span><span class="tag green">Business Support</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--accent-light)">📚</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--accent)">EWS / All Students</div>
+            <div class="tip-card-title">Central Sector Scholarship — Top Students</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Central Sector Scheme of Scholarships for College & University Students — for students in top 20 percentile of their Class 12 board, from families with income below ₹8 lakh/year. ₹12,000/year for undergraduate students, ₹20,000/year for postgraduate. 82,000 new scholarships every year!</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Divya scored 94% in 12th boards (top 20 percentile in her state). Her family earns ₹5.5 lakh. She registers on scholarships.gov.in and receives ₹12,000 every year for her 3-year graduation — total ₹36,000 free money for studying hard!</p>
+          </div>
+          <div class="tip-highlight">✅ Apply at scholarships.gov.in by October 31 every year. This is for ALL students regardless of caste — pure merit + income basis. Many students miss it simply by not applying!</div>
+        </div>
+        <div class="tip-tags"><span class="tag green">Merit Based</span><span class="tag blue">All Students</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 7: TAX & ITR -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="tip-section" id="tax">
+    <div class="section-header">
+      <div class="section-icon-wrap" style="background:var(--blue-light)">📋</div>
+      <div class="section-title">Tax Saving & Filing ITR</div>
+    </div>
+    <p class="section-desc">Save thousands in tax legally. Filing ITR is not just a duty — it helps you get loans, visas, and refunds!</p>
+
+    <div class="card-grid">
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--blue-light)">💰</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--blue)">Tax Saving</div>
+            <div class="tip-card-title">Section 80C — Save ₹46,800 Tax Per Year</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Under Section 80C, you can claim deduction of up to <strong>₹1.5 lakh</strong> from your taxable income by investing in specified instruments. For someone in the 30% tax bracket, this saves ₹46,800 in tax annually!</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 What Qualifies Under 80C?</div>
+            <p>PPF, ELSS Mutual Funds, LIC Premium, EPF, NSC, 5-year FD, Sukanya Samriddhi, Post Office TD (5yr), Tuition fees for children, Home loan principal repayment.</p>
+          </div>
+          <div class="tip-highlight">✅ Best 80C choice for young investors: <strong>ELSS Mutual Funds</strong> — only 3-year lock-in (shortest among all 80C options) AND highest potential returns (12%–15%). Use Groww or Zerodha to invest.</div>
+        </div>
+        <div class="tip-tags"><span class="tag blue">Tax Saving</span><span class="tag gold">₹1.5 Lakh Limit</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--purple-light)">🏥</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--purple)">Tax Saving</div>
+            <div class="tip-card-title">Section 80D — Save Tax on Health Insurance</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Premiums paid for health insurance are tax-deductible under 80D. Up to <strong>₹25,000 for self/family</strong> + ₹25,000 for parents (₹50,000 if parents are senior citizens). Total possible deduction: ₹75,000!</p>
+          <div class="tip-example">
+            <div class="tip-example-label">💡 Example</div>
+            <p>Ravi pays ₹12,000/year for his family's health insurance + ₹18,000 for his parents (senior citizens). He claims ₹12,000 + ₹18,000 = ₹30,000 deduction under 80D. If he's in 20% tax bracket, he saves <strong>₹6,000 in tax</strong> — the insurance is basically discounted by 50%!</p>
+          </div>
+          <div class="tip-highlight">✅ Moral: Getting health insurance is not just protection, it also saves you tax. It's a win-win!</div>
+        </div>
+        <div class="tip-tags"><span class="tag purple">Tax Saving</span><span class="tag teal">Health</span></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-head">
+          <div class="tip-card-icon" style="background:var(--teal-light)">📄</div>
+          <div class="tip-card-meta">
+            <div class="tip-card-tag" style="color:var(--teal)">Must Do</div>
+            <div class="tip-card-title">Why File ITR Even If You Have No Tax to Pay?</div>
+          </div>
+        </div>
+        <div class="tip-card-body">
+          <p>Many students and freshers think "I don't earn enough to pay tax, so I don't need to file ITR." That's WRONG. Filing ITR is beneficial even at zero tax.</p>
+          <ul style="font-size:0.85rem;color:var(--ink-soft);padding-left:18px;margin-top:8px;line-height:1.8;">
+            <li>Get <strong>TDS refund</strong> (if bank deducted tax on FD interest)</li>
+            <li>Required for <strong>visa applications</strong> (US, UK, Canada, etc.)</li>
+            <li>Acts as <strong>income proof</strong> for home loans, car loans</li>
+            <li>Carry forward <strong>capital losses</strong> to offset future gains</li>
+            <li>Shows you're a <strong>responsible citizen</strong> — builds financial record</li>
+          </ul>
+          <div class="tip-highlight">✅ File ITR free at incometax.gov.in before July 31 every year. Use ITR-1 form for salaried with income under ₹50 lakh. Takes 20–30 minutes.</div>
+        </div>
+        <div class="tip-tags"><span class="tag teal">All Citizens</span><span class="tag green">Free to File</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 8: GOLDEN RULES -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="tip-section" id="golden-rules">
+    <div class="section-header">
+      <div class="section-icon-wrap" style="background:var(--gold-light)">🌟</div>
+      <div class="section-title">Golden Rules of Personal Finance</div>
+    </div>
+    <p class="section-desc">10 rules that will change your financial life forever. Memorise these.</p>
+
+    <div class="tip-card">
+      <div class="tip-card-body" style="padding-top:16px;">
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <h4>Pay Yourself First</h4>
+              <p>The moment your salary arrives, immediately transfer your savings amount to a separate account or investment. Spend what's left — never save what's left after spending. If you save ₹3,000 first, you WILL adjust to the rest. If you save what's left, there's usually nothing left.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <h4>The 50-30-20 Rule</h4>
+              <p>Spend 50% of take-home income on NEEDS (rent, food, transport), 30% on WANTS (entertainment, dining out, shopping), 20% on SAVINGS and investments. This simple rule prevents overspending and ensures you always make progress.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <h4>Emergency Fund Before Investing</h4>
+              <p>Before putting money in stocks or mutual funds, build 3–6 months of expenses as an emergency fund in a liquid account (savings account or liquid mutual fund). Without this, one medical emergency can force you to sell investments at a loss.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <h4>Avoid Debt for Depreciating Assets</h4>
+              <p>Never take a loan for something that loses value — phone, TV, clothes, bike (unless for income). Good debt = education loan, home loan (assets that grow or earn). Bad debt = credit card EMI for gadgets, personal loans for vacations.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <h4>Start Investing at 21, Not 31</h4>
+              <p>₹1,000/month from age 21 to 60 at 12% = ₹1.17 crore. ₹1,000/month from age 31 to 60 at 12% = ₹35 lakh. Starting 10 years late costs you ₹82 lakh. Compounding needs TIME more than it needs money.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">6</div>
+            <div class="step-content">
+              <h4>Never Invest in What You Don't Understand</h4>
+              <p>If someone promises "guaranteed 30% monthly returns" — run. If you don't understand how a scheme makes money, don't put money in it. Stick to RDs, PPF, index funds, and FDs when starting out. Complexity ≠ better returns.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">7</div>
+            <div class="step-content">
+              <h4>Insure Before You Invest</h4>
+              <p>Get health insurance and term insurance BEFORE you invest in stocks or mutual funds. One hospital bill without insurance can destroy years of investments. Insurance is the foundation of all financial planning.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">8</div>
+            <div class="step-content">
+              <h4>Track Every Rupee (That's What BudgetBuddy is For!)</h4>
+              <p>You cannot manage what you don't measure. Track all expenses for 90 days. You'll be shocked at how much goes on food delivery, impulse online shopping, and subscriptions you forgot about. Awareness is the first step to control.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">9</div>
+            <div class="step-content">
+              <h4>Increase Your Income, Not Just Cut Expenses</h4>
+              <p>Frugality has limits — you can only cut so much. But income can grow unlimited. Invest in skills (courses, certifications), build a side income (freelancing, content creation, tutoring). A ₹5,000/month side income invested from age 22 = ₹5.8 crore by retirement.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">10</div>
+            <div class="step-content">
+              <h4>Review Your Finances Every Month</h4>
+              <p>Set a "money date" with yourself on the last day of every month. Review: Did I stick to budget? Is my SIP running? Are my insurance premiums paid? Any unused subscriptions? Monthly reviews prevent small leaks from becoming financial floods.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK FAQ -->
+  <div class="tip-section">
+    <div class="section-header">
+      <div class="section-icon-wrap" style="background:var(--accent-light)">❓</div>
+      <div class="section-title">Quick Questions Answered</div>
+    </div>
+
+    <div class="accord-item"><div class="accord-head" onclick="toggleAcc(this)"><span class="accord-title">🤔 How much should I save as a college student with ₹3,000/month pocket money?</span><span class="accord-chev">▼</span></div><div class="accord-body"><p>Even saving ₹300–₹500/month is excellent at this stage. Start a Post Office RD or a small SIP. The amount matters less than the <strong>habit</strong>. Someone who saves ₹500/month consistently from age 20 will be wealthier at 40 than someone who starts saving ₹10,000/month at 30.</p></div></div>
+
+    <div class="accord-item"><div class="accord-head" onclick="toggleAcc(this)"><span class="accord-title">💳 Should I get a credit card as a student?</span><span class="accord-chev">▼</span></div><div class="accord-body"><p>Yes — but only if you're disciplined. A credit card used well builds your CIBIL score, gives cashback/rewards, and provides 45-day interest-free credit. The golden rule: <strong>ALWAYS pay 100% of the bill before the due date</strong>. Never pay minimum due. Set up auto-pay for the full amount. Never treat a credit card as extra money.</p></div></div>
+
+    <div class="accord-item"><div class="accord-head" onclick="toggleAcc(this)"><span class="accord-title">📊 Mutual fund vs FD — which is better?</span><span class="accord-chev">▼</span></div><div class="accord-body"><p>For short term (under 3 years) and risk-averse people: FD wins — guaranteed returns, no stress. For long term (5+ years): Mutual funds (especially index funds) historically beat FD returns significantly (12% vs 7%). The answer is BOTH — FD for your emergency fund and short-term goals, equity mutual funds for long-term wealth building.</p></div></div>
+
+    <div class="accord-item"><div class="accord-head" onclick="toggleAcc(this)"><span class="accord-title">📱 Are apps like Groww, Zerodha safe for investing?</span><span class="accord-chev">▼</span></div><div class="accord-body"><p>Yes — they are SEBI-regulated, your mutual fund units are held by NSDL/CDSL (government depositories), not by the app company. Even if Groww or Zerodha shut down tomorrow, your investments are safe and can be transferred to another broker. Always enable 2-factor authentication and never share your login OTP.</p></div></div>
+
+    <div class="accord-item"><div class="accord-head" onclick="toggleAcc(this)"><span class="accord-title">🏠 Is buying a house better than renting as a young professional?</span><span class="accord-chev">▼</span></div><div class="accord-body"><p>In your 20s, renting is usually smarter — you maintain mobility (move for better jobs), avoid EMI burden in low-income years, and can invest the difference in equity for higher returns. Consider buying when: you plan to stay in one city for 10+ years, your EMI is below 40% of take-home pay, and you have a 20% down payment saved without emptying your emergency fund.</p></div></div>
+
+    <div class="accord-item"><div class="accord-head" onclick="toggleAcc(this)"><span class="accord-title">🔒 What to do if I get a job offer? First 5 financial steps?</span><span class="accord-chev">▼</span></div><div class="accord-body"><p>1) Open a <strong>salary account</strong> and set up auto-SIP of ₹1,000–₹2,000/month in a Nifty 50 index fund from day one. 2) Get <strong>health insurance</strong> (employer's + a personal backup). 3) Get <strong>term insurance</strong> if you have dependents. 4) Start <strong>PPF contribution</strong> of ₹500/month. 5) File your first <strong>ITR</strong> by July 31 of the assessment year. These 5 steps in month 1 of your job will compound into crores by retirement.</p></div></div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-bottom">
+    <span class="footer-logo-text">Budget<span>Buddy</span></span>
+    <p>© 2025 BudgetBuddy. For educational purposes only. Verify all scheme details at official government websites.</p>
+    <p>Made with ♥ for students everywhere.</p>
+  </div>
+</footer>
+
+<script>
+// SIDEBAR
+const hamburger = document.getElementById('hamburger');
+const sidebar   = document.getElementById('sidebar');
+const overlay   = document.getElementById('sidebar-overlay');
+hamburger.addEventListener('click', () => {
+  const open = sidebar.classList.toggle('open');
+  overlay.classList.toggle('visible', open);
+  hamburger.classList.toggle('open', open);
+});
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('open');
+  overlay.classList.remove('visible');
+  hamburger.classList.remove('open');
+});
+
+// SCROLL
+function scrollTo(id) {
+  const el = document.querySelector(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ACCORDION
+function toggleAcc(head) {
+  const body = head.nextElementSibling;
+  const chev = head.querySelector('.accord-chev');
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+// SEARCH
+const searchIndex = [
+  { title: 'Savings Account', section: '#banking', keywords: 'savings account bank zero balance student kotak sbi' },
+  { title: 'Fixed Deposit (FD)', section: '#banking', keywords: 'fd fixed deposit lock interest guaranteed safe' },
+  { title: 'Recurring Deposit (RD)', section: '#banking', keywords: 'rd recurring deposit monthly 500 habit' },
+  { title: 'Compound Interest', section: '#banking', keywords: 'compound interest simple ci si money grow' },
+  { title: 'CIBIL / Credit Score', section: '#banking', keywords: 'cibil credit score 750 loan credit card report' },
+  { title: 'UPI NEFT RTGS IMPS', section: '#banking', keywords: 'upi neft rtgs imps transfer payment digital' },
+  { title: 'SIP — Mutual Fund', section: '#investments', keywords: 'sip systematic investment plan mutual fund 500 month' },
+  { title: 'PPF', section: '#investments', keywords: 'ppf public provident fund 15 year tax free 7.1' },
+  { title: 'EPF', section: '#investments', keywords: 'epf employee provident fund salary salaried retirement' },
+  { title: 'Stocks / Equity', section: '#investments', keywords: 'stocks shares equity nse bse zerodha demat' },
+  { title: 'NPS Pension', section: '#investments', keywords: 'nps national pension system retirement 60 atal' },
+  { title: 'Mutual Fund Types', section: '#investments', keywords: 'mutual fund types liquid debt equity index large cap small' },
+  { title: 'Jan Dhan Yojana', section: '#govt-schemes', keywords: 'jan dhan pmjdy zero balance rupay insurance 2 lakh' },
+  { title: 'PMSBY Accident Insurance ₹20', section: '#govt-schemes', keywords: 'pmsby accident insurance 20 rupees suraksha bima' },
+  { title: 'PMJJBY Life Insurance ₹436', section: '#govt-schemes', keywords: 'pmjjby life insurance 436 jeevan jyoti bima' },
+  { title: 'PM Mudra Loan', section: '#govt-schemes', keywords: 'mudra loan business 10 lakh no collateral shishu kishore tarun' },
+  { title: 'Atal Pension Yojana (APY)', section: '#govt-schemes', keywords: 'apy atal pension yojana unorganised freelancer 1000 5000' },
+  { title: 'PMAY Home Loan Subsidy', section: '#govt-schemes', keywords: 'pmay home loan subsidy housing awas first house' },
+  { title: 'Vidya Lakshmi Education Loan', section: '#govt-schemes', keywords: 'vidya lakshmi education loan study bank portal' },
+  { title: 'Sukanya Samriddhi (SSY)', section: '#post-office', keywords: 'sukanya samriddhi girl child 8.2 post office ssy 21 year' },
+  { title: 'Post Office MIS Monthly Income', section: '#post-office', keywords: 'mis monthly income scheme post office 7.4 fixed income' },
+  { title: 'Post Office Schemes', section: '#post-office', keywords: 'post office ppf rd td kvp nsc interest rate safe' },
+  { title: 'Health Insurance', section: '#insurance', keywords: 'health insurance medical policy 5 lakh hospital cashless' },
+  { title: 'Term Insurance', section: '#insurance', keywords: 'term insurance life cover 1 crore family pure protection' },
+  { title: 'Ayushman Bharat PM-JAY', section: '#insurance', keywords: 'ayushman bharat pmjay free health cover 5 lakh bpl golden card' },
+  { title: 'SC/ST Scholarships', section: '#sc-st-obc', keywords: 'sc st scholarship pre post matric government nsp' },
+  { title: 'Stand-Up India SC ST Business Loan', section: '#sc-st-obc', keywords: 'stand up india sc st women 10 lakh 1 crore loan' },
+  { title: 'OBC Minority NMDFC Loans', section: '#sc-st-obc', keywords: 'nmdfc obc minority loan subsidised interest muslim christian sikh' },
+  { title: 'Central Sector Scholarship', section: '#sc-st-obc', keywords: 'central sector scholarship merit 12000 20000 income 8 lakh' },
+  { title: 'Section 80C Tax Saving', section: '#tax', keywords: '80c tax saving 1.5 lakh deduction elss lic ppf epf' },
+  { title: 'Section 80D Health Tax', section: '#tax', keywords: '80d health insurance tax deduction 25000 parents' },
+  { title: 'Filing ITR', section: '#tax', keywords: 'itr income tax return file why student fresher refund' },
+  { title: '50-30-20 Rule', section: '#golden-rules', keywords: '50 30 20 rule budget needs wants savings' },
+  { title: 'Golden Rules of Finance', section: '#golden-rules', keywords: 'golden rules save invest emergency fund debt' },
+];
+
+function doSearch(q) {
+  const wrap = document.getElementById('searchResults');
+  if (!q.trim()) { wrap.style.display = 'none'; return; }
+  const lq = q.toLowerCase();
+  const hits = searchIndex.filter(i => i.title.toLowerCase().includes(lq) || i.keywords.includes(lq)).slice(0, 6);
+  if (!hits.length) {
+    wrap.innerHTML = '<div class="sr-item" style="cursor:default;color:var(--ink-muted)">No results found. Try different keywords.</div>';
+    wrap.style.display = 'block';
+    return;
+  }
+  wrap.innerHTML = hits.map(h =>
+    `<div class="sr-item" onclick="goResult('${h.section}')">
+      <span>🔍</span>
+      <span><strong>${h.title}</strong></span>
+      <span class="sr-cat">${h.section.replace('#','').replace('-',' ')}</span>
+    </div>`
+  ).join('');
+  wrap.style.display = 'block';
+}
+
+function goResult(section) {
+  document.getElementById('searchResults').style.display = 'none';
+  document.getElementById('searchInput').value = '';
+  const el = document.querySelector(section);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) {
+    document.getElementById('searchResults').style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>

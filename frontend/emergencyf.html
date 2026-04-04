@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Emergency Fund Tracker — BudgetBuddy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --ink:#1a1a1a; --ink-soft:#4a4a4a; --ink-muted:#8a8a8a;
+      --paper:#fafaf8; --paper-warm:#f5f3ee;
+      --accent:#2d6a4f; --accent-light:#d8f3dc; --accent-mid:#52b788; --accent-dark:#1b4332;
+      --border:#e0ddd7; --white:#ffffff;
+      --nav-h:68px; --danger:#c0392b; --warn:#d97706; --sidebar-w:260px;
+      --shield:#1e5c8a; --shield-light:#dbeafe;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); font-size:15px; line-height:1.6; overflow-x:hidden; }
+
+    /* ── LOCK ── */
+    #lock-screen { position:fixed; inset:0; background:var(--paper); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:20px; text-align:center; padding:24px; }
+    .lock-icon { width:72px; height:72px; background:var(--accent-light); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; }
+    #lock-screen h2 { font-family:'DM Serif Display',serif; font-size:1.8rem; letter-spacing:-0.02em; }
+    #lock-screen p { color:var(--ink-soft); max-width:340px; font-size:0.92rem; }
+    .btn-go-login { background:var(--accent); color:white; text-decoration:none; padding:12px 32px; border-radius:10px; font-weight:600; font-size:0.95rem; transition:background 0.2s; }
+    .btn-go-login:hover { background:var(--accent-dark); }
+
+    /* ── NAV ── */
+    nav { position:fixed; top:0; left:0; right:0; height:var(--nav-h); background:var(--white); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 5%; z-index:500; box-shadow:0 1px 12px rgba(0,0,0,0.05); }
+    .nav-left { display:flex; align-items:center; gap:14px; }
+    .hamburger { width:36px; height:36px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; cursor:pointer; border-radius:8px; border:1.5px solid var(--border); background:transparent; transition:background 0.2s; flex-shrink:0; }
+    .hamburger:hover { background:var(--paper-warm); }
+    .hamburger span { display:block; width:16px; height:1.5px; background:var(--ink); border-radius:2px; transition:transform 0.25s,opacity 0.25s; }
+    .hamburger.open span:nth-child(1) { transform:translateY(6.5px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity:0; }
+    .hamburger.open span:nth-child(3) { transform:translateY(-6.5px) rotate(-45deg); }
+    .logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo-icon { width:36px; height:36px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+    .logo-icon svg { width:20px; height:20px; fill:white; }
+    .logo-text { font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--ink); }
+    .logo-text span { color:var(--accent); }
+    .nav-links { display:flex; align-items:center; gap:6px; list-style:none; }
+    .nav-links a { text-decoration:none; color:var(--ink-soft); font-size:0.87rem; font-weight:500; padding:8px 13px; border-radius:8px; transition:background 0.2s,color 0.2s; }
+    .nav-links a:hover { background:var(--paper-warm); color:var(--ink); }
+    .nav-links .btn-logout { background:#fee2e2; color:var(--danger); border-radius:8px; padding:8px 18px; font-weight:600; }
+    .nav-links .btn-logout:hover { background:#fecaca; }
+
+    /* ── SIDEBAR ── */
+    .sidebar-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.25); z-index:400; opacity:0; pointer-events:none; transition:opacity 0.25s; }
+    .sidebar-overlay.visible { opacity:1; pointer-events:all; }
+    .sidebar { position:fixed; top:var(--nav-h); left:0; bottom:0; width:var(--sidebar-w); background:var(--white); border-right:1px solid var(--border); z-index:450; padding:24px 0; transform:translateX(-100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); overflow-y:auto; }
+    .sidebar.open { transform:translateX(0); }
+    .sidebar-section { padding:0 16px; margin-bottom:8px; }
+    .sidebar-section-label { font-size:0.7rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-muted); padding:6px 8px 8px; }
+    .sidebar a { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink-soft); font-size:0.88rem; font-weight:500; padding:9px 12px; border-radius:9px; transition:background 0.15s,color 0.15s; margin-bottom:2px; }
+    .sidebar a:hover, .sidebar a.active { background:var(--accent-light); color:var(--accent); }
+    .sidebar a .s-icon { font-size:1rem; width:20px; text-align:center; }
+    .sidebar-divider { border:none; border-top:1px solid var(--border); margin:10px 16px; }
+
+    /* ── MAIN ── */
+    main { padding-top:calc(var(--nav-h) + 40px); padding-bottom:80px; max-width:920px; margin:0 auto; padding-left:24px; padding-right:24px; }
+
+    .page-header { margin-bottom:32px; }
+    .breadcrumb { font-size:0.78rem; color:var(--ink-muted); margin-bottom:8px; display:flex; gap:6px; align-items:center; }
+    .breadcrumb a { color:var(--ink-muted); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--accent); }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.8rem,4vw,2.5rem); letter-spacing:-0.03em; line-height:1.15; }
+    .page-header p { color:var(--ink-soft); font-size:0.92rem; margin-top:8px; max-width:580px; }
+
+    /* ── HERO SHIELD ── */
+    .shield-hero {
+      background:linear-gradient(135deg, var(--accent-dark) 0%, #1e5c8a 100%);
+      border-radius:20px; padding:36px; margin-bottom:28px;
+      display:grid; grid-template-columns:1fr auto; gap:24px; align-items:center;
+    }
+    @media(max-width:600px){ .shield-hero{ grid-template-columns:1fr; } }
+    .shield-hero h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; color:white; letter-spacing:-0.02em; margin-bottom:6px; }
+    .shield-hero p { font-size:0.86rem; color:rgba(255,255,255,0.72); max-width:380px; line-height:1.65; }
+    .shield-badge { background:rgba(255,255,255,0.12); border-radius:16px; padding:20px 26px; text-align:center; min-width:140px; }
+    .shield-badge .sb-val { font-family:'DM Serif Display',serif; font-size:2rem; color:white; letter-spacing:-0.02em; }
+    .shield-badge .sb-label { font-size:0.72rem; color:rgba(255,255,255,0.65); text-transform:uppercase; letter-spacing:0.07em; margin-top:2px; }
+    .shield-badge .sb-sub { font-size:0.78rem; color:rgba(255,255,255,0.5); margin-top:4px; }
+
+    /* ── SETUP CARD ── */
+    .card { background:var(--white); border:1.5px solid var(--border); border-radius:16px; padding:26px; margin-bottom:20px; }
+    .card-title { font-family:'DM Serif Display',serif; font-size:1.15rem; letter-spacing:-0.02em; color:var(--ink); margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media(max-width:560px){ .form-grid{ grid-template-columns:1fr; } }
+    .form-group { display:flex; flex-direction:column; gap:5px; }
+    .form-group.full { grid-column:1/-1; }
+    label { font-size:0.78rem; font-weight:600; color:var(--ink-soft); letter-spacing:0.02em; }
+    input[type="number"], input[type="text"], select {
+      width:100%; border:1.5px solid var(--border); border-radius:9px; padding:10px 13px;
+      font-family:'DM Sans',sans-serif; font-size:0.88rem; color:var(--ink);
+      background:var(--paper); outline:none; transition:border-color 0.2s,box-shadow 0.2s;
+    }
+    input:focus, select:focus { border-color:var(--accent-mid); box-shadow:0 0 0 3px rgba(82,183,136,0.12); }
+    .input-pre { position:relative; }
+    .input-pre input { padding-left:26px; }
+    .input-pre span { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:0.82rem; color:var(--ink-muted); pointer-events:none; }
+    .field-hint { font-size:0.74rem; color:var(--ink-muted); margin-top:4px; }
+
+    /* ── MONTH MULTIPLIER CHIPS ── */
+    .chip-group { display:flex; flex-wrap:wrap; gap:7px; margin-top:6px; }
+    .chip-opt { background:var(--paper-warm); border:1.5px solid var(--border); border-radius:20px; padding:6px 14px; font-size:0.8rem; font-weight:500; color:var(--ink-soft); cursor:pointer; transition:all 0.15s; font-family:'DM Sans',sans-serif; }
+    .chip-opt:hover { border-color:var(--accent-mid); color:var(--accent); background:var(--accent-light); }
+    .chip-opt.selected { background:var(--accent-light); border-color:var(--accent); color:var(--accent); font-weight:600; }
+
+    /* ── BUTTON ── */
+    .btn-primary { background:var(--accent); color:white; border:none; border-radius:10px; padding:12px 28px; font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600; cursor:pointer; transition:background 0.2s,transform 0.15s; }
+    .btn-primary:hover { background:var(--accent-dark); transform:translateY(-1px); }
+    .btn-secondary { background:var(--paper-warm); color:var(--ink-soft); border:1.5px solid var(--border); border-radius:10px; padding:11px 22px; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500; cursor:pointer; transition:background 0.2s; }
+    .btn-secondary:hover { background:var(--border); }
+
+    /* ── TARGET RESULT ── */
+    .target-result { display:none; }
+    .result-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+    @media(max-width:560px){ .result-grid{ grid-template-columns:1fr; } }
+    .result-box { border-radius:13px; padding:18px 16px; }
+    .result-box.green { background:var(--accent-light); border:1.5px solid #b7e4c7; }
+    .result-box.blue  { background:#dbeafe; border:1.5px solid #bfdbfe; }
+    .result-box.amber { background:#fef3c7; border:1.5px solid #fde68a; }
+    .result-box .r-label { font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:var(--ink-muted); margin-bottom:5px; }
+    .result-box .r-val { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.02em; color:var(--ink); }
+    .result-box .r-sub { font-size:0.76rem; color:var(--ink-muted); margin-top:2px; }
+
+    /* ── BIG PROGRESS RING ── */
+    .progress-section { display:grid; grid-template-columns:auto 1fr; gap:32px; align-items:center; margin-bottom:28px; }
+    @media(max-width:560px){ .progress-section{ grid-template-columns:1fr; justify-items:center; } }
+    .ring-wrap { position:relative; width:160px; height:160px; flex-shrink:0; }
+    .ring-wrap svg { transform:rotate(-90deg); }
+    .ring-bg  { fill:none; stroke:var(--paper-warm); stroke-width:14; }
+    .ring-fg  { fill:none; stroke:var(--accent-mid); stroke-width:14; stroke-linecap:round; stroke-dasharray:408; stroke-dashoffset:408; transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1), stroke 0.4s; }
+    .ring-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+    .ring-pct { font-family:'DM Serif Display',serif; font-size:1.9rem; color:var(--ink); line-height:1; }
+    .ring-sublabel { font-size:0.72rem; color:var(--ink-muted); margin-top:3px; }
+
+    .progress-info h3 { font-family:'DM Serif Display',serif; font-size:1.3rem; letter-spacing:-0.02em; margin-bottom:8px; }
+    .progress-info .pi-saved { font-size:0.88rem; color:var(--ink-soft); margin-bottom:14px; }
+    .progress-info .pi-saved strong { color:var(--ink); }
+
+    /* milestone markers */
+    .milestones { display:flex; flex-direction:column; gap:8px; }
+    .milestone { display:flex; align-items:center; gap:10px; font-size:0.82rem; }
+    .ms-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700; flex-shrink:0; }
+    .ms-dot.done    { background:var(--accent); color:white; }
+    .ms-dot.current { background:var(--accent-light); color:var(--accent); border:2px solid var(--accent); }
+    .ms-dot.pending { background:var(--paper-warm); color:var(--ink-muted); }
+    .ms-label { color:var(--ink-soft); }
+    .ms-label strong { color:var(--ink); }
+    .ms-badge { font-size:0.7rem; font-weight:600; background:var(--accent-light); color:var(--accent); padding:2px 8px; border-radius:20px; margin-left:auto; }
+
+    /* ── SECTION DIVIDER ── */
+    .sec-sep { border:none; border-top:1px solid var(--border); margin:24px 0; }
+
+    /* ── DEPOSIT SECTION ── */
+    .deposit-row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+    .deposit-row .form-group { flex:1; min-width:160px; margin-bottom:0; }
+    .withdraw-row { margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; }
+
+    /* ── HISTORY ── */
+    .tx-list { display:flex; flex-direction:column; gap:6px; }
+    .tx-item { display:flex; align-items:center; gap:12px; padding:11px 14px; background:var(--paper-warm); border-radius:10px; }
+    .tx-icon { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0; }
+    .tx-icon.dep  { background:var(--accent-light); }
+    .tx-icon.with { background:#fee2e2; }
+    .tx-details { flex:1; }
+    .tx-details .tx-name { font-size:0.85rem; font-weight:500; color:var(--ink); }
+    .tx-details .tx-date { font-size:0.73rem; color:var(--ink-muted); }
+    .tx-amount { font-size:0.88rem; font-weight:700; }
+    .tx-amount.pos { color:var(--accent); }
+    .tx-amount.neg { color:var(--danger); }
+
+    /* ── ALERT BANNERS ── */
+    .alert { border-radius:12px; padding:14px 18px; font-size:0.85rem; line-height:1.65; margin-bottom:20px; display:none; }
+    .alert.info    { background:#dbeafe; border:1px solid #bfdbfe; color:#1e40af; }
+    .alert.success { background:var(--accent-light); border:1px solid #b7e4c7; color:var(--accent-dark); }
+    .alert.warning { background:#fef3c7; border:1px solid #fde68a; color:#92400e; }
+    .alert.danger  { background:#fee2e2; border:1px solid #fecaca; color:#991b1b; }
+
+    /* ── TIPS ── */
+    .tips-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    @media(max-width:560px){ .tips-grid{ grid-template-columns:1fr; } }
+    .tip-card { background:var(--white); border:1.5px solid var(--border); border-radius:12px; padding:16px; display:flex; gap:12px; }
+    .tip-card .t-icon { font-size:1.3rem; flex-shrink:0; margin-top:2px; }
+    .tip-card h4 { font-size:0.86rem; font-weight:600; color:var(--ink); margin-bottom:4px; }
+    .tip-card p { font-size:0.79rem; color:var(--ink-muted); line-height:1.55; }
+
+    /* ── SCENARIOS ── */
+    .scenario-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+    .scenario-card { background:var(--white); border:1.5px solid var(--border); border-radius:12px; padding:18px; cursor:pointer; transition:border-color 0.2s,box-shadow 0.2s,transform 0.15s; }
+    .scenario-card:hover { border-color:var(--accent-mid); box-shadow:0 4px 16px rgba(45,106,79,0.1); transform:translateY(-2px); }
+    .scenario-card .sc-icon { font-size:1.6rem; margin-bottom:8px; }
+    .scenario-card h4 { font-size:0.86rem; font-weight:600; color:var(--ink); margin-bottom:4px; }
+    .scenario-card p { font-size:0.76rem; color:var(--ink-muted); line-height:1.5; }
+    .scenario-card .sc-cost { font-size:0.78rem; font-weight:700; color:var(--accent); margin-top:8px; }
+
+    /* ── MODAL ── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:800; display:none; align-items:center; justify-content:center; padding:20px; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:var(--white); border-radius:18px; padding:30px; width:100%; max-width:400px; animation:fadeUp 0.25s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .modal h3 { font-family:'DM Serif Display',serif; font-size:1.25rem; letter-spacing:-0.02em; margin-bottom:6px; }
+    .modal p { font-size:0.84rem; color:var(--ink-soft); margin-bottom:18px; line-height:1.6; }
+    .modal-actions { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+
+    /* ── FOOTER ── */
+    footer { background:var(--ink); color:#888; padding:28px 5%; }
+    .footer-bottom { max-width:920px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+    .footer-bottom p { font-size:0.78rem; color:#555; }
+    .footer-logo-text { font-family:'DM Serif Display',serif; font-size:1rem; color:#e8e5df; }
+    .footer-logo-text span { color:var(--accent-mid); }
+
+    /* ── TOAST ── */
+    .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--ink); color:white; padding:11px 22px; border-radius:10px; font-size:0.84rem; font-weight:500; z-index:9999; opacity:0; transition:transform 0.3s,opacity 0.3s; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.2); }
+    .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+    .toast.success { background:var(--accent-dark); }
+    .toast.warn    { background:var(--warn); }
+  </style>
+</head>
+<body>
+
+<!-- ── LOCK ── -->
+<div id="lock-screen">
+  <div class="lock-icon">🔒</div>
+  <h2>Login Required</h2>
+  <p>You need to be logged in to use the Emergency Fund Tracker and other BudgetBuddy features.</p>
+  <a href="login.html" class="btn-go-login">Go to Login →</a>
+  <a href="index.html" style="font-size:0.82rem;color:var(--ink-muted);text-decoration:none;margin-top:4px;">← Back to Home</a>
+</div>
+
+<!-- ── SIDEBAR OVERLAY ── -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Main</div>
+    <a href="dashboard.html"><span class="s-icon">📊</span> Dashboard</a>
+    <a href="profile.html"><span class="s-icon">👤</span> My Profile</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Tools</div>
+    <a href="smartbalace.html"><span class="s-icon">🧮</span> Smart Balance Calculator</a>
+    <a href="whatif.html"><span class="s-icon">📈</span> What-If Simulation</a>
+    <a href="savinggoal.html"><span class="s-icon">🎯</span> Savings Goal Tracker</a>
+    <a href="emergencyf.html" class="active"><span class="s-icon">🛡️</span> Emergency Fund Tracker</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Learn</div>
+    <a href="tips.html"><span class="s-icon">💡</span> Money Tips</a>
+    <a href="guide.html"><span class="s-icon">📖</span> User Guide</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <a href="contact.html"><span class="s-icon">💬</span> Contact Us</a>
+  </div>
+  <div class="sidebar-section">
+    <a href="#" id="sidebar-logout" style="color:var(--danger)"><span class="s-icon">🚪</span> Logout</a>
+  </div>
+</aside>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-left">
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="dashboard.html" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H9l3-3 3 3h-2v4z"/></svg>
+      </div>
+      <span class="logo-text">Budget<span>Buddy</span></span>
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="contact.html">Contact Us</a></li>
+    <li><a href="#" class="btn-logout" id="nav-logout">Logout</a></li>
+  </ul>
+</nav>
+
+<!-- ── MAIN ── -->
+<main id="main-content">
+
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Dashboard</a> <span>›</span> <span>Emergency Fund Tracker</span>
+    </div>
+    <h1>Emergency Fund Tracker 🛡️</h1>
+    <p>Build a financial safety net that protects you when life throws the unexpected. Aim for 3–6 months of essential expenses.</p>
+  </div>
+
+  <!-- ALERT BANNERS -->
+  <div class="alert warning" id="alert-low">⚠️ <strong>Your fund is below 1 month of expenses.</strong> You're in the danger zone. Prioritise adding to your emergency fund before other goals.</div>
+  <div class="alert success" id="alert-done">🎉 <strong>Congratulations! Your emergency fund is fully built.</strong> You now have a solid financial safety net. Maintain it and redirect surplus to investments.</div>
+  <div class="alert info" id="alert-setup">💡 <strong>Let's set up your Emergency Fund.</strong> Fill in your monthly expenses below to calculate your target amount.</div>
+
+  <!-- HERO SHIELD BANNER -->
+  <div class="shield-hero" id="shield-hero">
+    <div>
+      <h2 id="hero-title">Your Emergency Fund Status</h2>
+      <p id="hero-desc">Track your progress toward a 3-month financial safety net. Every rupee saved here is protection against life's surprises.</p>
+    </div>
+    <div class="shield-badge">
+      <div class="sb-val" id="hero-months">—</div>
+      <div class="sb-label">Months Covered</div>
+      <div class="sb-sub" id="hero-target-disp">Target: —</div>
+    </div>
+  </div>
+
+  <!-- ── SETUP / CONFIGURE ── -->
+  <div class="card" id="setup-card">
+    <div class="card-title">⚙️ Configure Your Emergency Fund</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Monthly Essential Expenses (₹)</label>
+        <div class="input-pre"><span>₹</span><input type="number" id="cfg-expenses" placeholder="e.g. 8000" min="0" oninput="recalcTarget()"/></div>
+        <div class="field-hint">Rent + food + transport + utilities + minimum bills</div>
+      </div>
+      <div class="form-group">
+        <label>Monthly Income (₹)</label>
+        <div class="input-pre"><span>₹</span><input type="number" id="cfg-income" placeholder="e.g. 15000" min="0"/></div>
+      </div>
+      <div class="form-group full">
+        <label>Target coverage — how many months?</label>
+        <div class="chip-group" id="month-chips">
+          <div class="chip-opt" data-val="1">1 Month <span style="font-size:0.7rem;opacity:.7">(Starter)</span></div>
+          <div class="chip-opt selected" data-val="3">3 Months <span style="font-size:0.7rem;opacity:.7">(Recommended)</span></div>
+          <div class="chip-opt" data-val="6">6 Months <span style="font-size:0.7rem;opacity:.7">(Ideal)</span></div>
+          <div class="chip-opt" data-val="12">12 Months <span style="font-size:0.7rem;opacity:.7">(Very Safe)</span></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Preferred Monthly Contribution (₹)</label>
+        <div class="input-pre"><span>₹</span><input type="number" id="cfg-contribution" placeholder="e.g. 2000" min="0" oninput="recalcTarget()"/></div>
+      </div>
+      <div class="form-group">
+        <label>Where will you keep it?</label>
+        <select id="cfg-location">
+          <option value="savings">🏦 Savings Account</option>
+          <option value="fd">📄 Fixed Deposit</option>
+          <option value="liquid">📈 Liquid Mutual Fund</option>
+          <option value="sweep">🔄 Sweep-in FD</option>
+          <option value="other">📦 Other</option>
+        </select>
+      </div>
+    </div>
+    <div id="target-preview" style="margin-top:16px;display:none;background:var(--accent-light);border-radius:10px;padding:14px 18px;font-size:0.85rem;color:var(--accent-dark);line-height:1.7"></div>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <button class="btn-primary" onclick="saveConfig()">Save & Continue →</button>
+      <button class="btn-secondary" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- ── PROGRESS SECTION ── -->
+  <div id="tracker-section" style="display:none">
+
+    <!-- Big ring + milestones -->
+    <div class="card">
+      <div class="card-title">📊 Fund Progress</div>
+      <div class="progress-section">
+        <div class="ring-wrap">
+          <svg width="160" height="160" viewBox="0 0 160 160">
+            <circle class="ring-bg" cx="80" cy="80" r="65"/>
+            <circle class="ring-fg" id="ring-fg" cx="80" cy="80" r="65"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-pct" id="ring-pct">0%</div>
+            <div class="ring-sublabel">Complete</div>
+          </div>
+        </div>
+        <div class="progress-info">
+          <h3 id="pi-heading">Building your shield…</h3>
+          <p class="pi-saved" id="pi-saved">₹0 saved of ₹0 target</p>
+          <div class="milestones" id="milestones-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary stats -->
+    <div class="result-grid">
+      <div class="result-box green">
+        <div class="r-label">Total Saved</div>
+        <div class="r-val" id="stat-saved">₹0</div>
+        <div class="r-sub">in your emergency fund</div>
+      </div>
+      <div class="result-box blue">
+        <div class="r-label">Still Needed</div>
+        <div class="r-val" id="stat-needed">₹0</div>
+        <div class="r-sub">to reach target</div>
+      </div>
+      <div class="result-box amber">
+        <div class="r-label">Est. Completion</div>
+        <div class="r-val" id="stat-eta">—</div>
+        <div class="r-sub" id="stat-eta-sub">at current contribution</div>
+      </div>
+    </div>
+
+    <!-- Deposit & Withdraw -->
+    <div class="card">
+      <div class="card-title">💰 Add / Withdraw Funds</div>
+      <div class="deposit-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Amount (₹)</label>
+          <div class="input-pre"><span>₹</span><input type="number" id="tx-amount" placeholder="e.g. 2000" min="1"/></div>
+        </div>
+        <div class="form-group" style="margin-bottom:0;flex:2;min-width:180px">
+          <label>Note (optional)</label>
+          <input type="text" id="tx-note" placeholder="e.g. Monthly saving, Gift money…" maxlength="60"/>
+        </div>
+      </div>
+      <div class="withdraw-row">
+        <button class="btn-primary" onclick="addTransaction('deposit')">+ Deposit</button>
+        <button class="btn-secondary" onclick="openWithdrawModal()">− Withdraw</button>
+        <button class="btn-secondary" onclick="document.getElementById('setup-card').style.display='block';document.getElementById('setup-card').scrollIntoView({behavior:'smooth'})">⚙️ Edit Setup</button>
+      </div>
+    </div>
+
+    <!-- Transaction history -->
+    <div class="card" id="tx-history-card" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:0">🕐 Transaction History</div>
+        <button onclick="clearHistory()" style="background:none;border:none;font-size:0.78rem;color:var(--ink-muted);cursor:pointer;text-decoration:underline;font-family:'DM Sans',sans-serif">Clear all</button>
+      </div>
+      <div class="tx-list" id="tx-list"></div>
+    </div>
+
+    <!-- What-if scenarios -->
+    <div class="card">
+      <div class="card-title">🤔 Emergency Scenarios — Are You Covered?</div>
+      <p style="font-size:0.83rem;color:var(--ink-muted);margin-bottom:18px">Click any scenario to see if your current fund can handle it.</p>
+      <div class="scenario-grid" id="scenario-grid"></div>
+    </div>
+
+  </div><!-- /tracker-section -->
+
+  <!-- ── TIPS ── -->
+  <div class="card" style="margin-top:8px">
+    <div class="card-title">💡 Emergency Fund — Smart Tips</div>
+    <div class="tips-grid">
+      <div class="tip-card"><span class="t-icon">🏦</span><div><h4>Keep it liquid</h4><p>Your emergency fund must be accessible within 24 hours. A savings account or liquid mutual fund is ideal — not locked FDs.</p></div></div>
+      <div class="tip-card"><span class="t-icon">🔒</span><div><h4>Keep it separate</h4><p>Never mix emergency money with your regular spending account. Out of sight = out of temptation.</p></div></div>
+      <div class="tip-card"><span class="t-icon">🎯</span><div><h4>3 months first</h4><p>Start with 1 month as a quick goal, then push to 3 months. 6 months is the gold standard for financial security.</p></div></div>
+      <div class="tip-card"><span class="t-icon">🔄</span><div><h4>Replenish after use</h4><p>If you use your emergency fund, treat rebuilding it as your top financial priority — before any other goals.</p></div></div>
+      <div class="tip-card"><span class="t-icon">📈</span><div><h4>Earn interest too</h4><p>A Sweep-in FD or Liquid Mutual Fund earns 5–7% on your emergency fund while keeping it fully accessible.</p></div></div>
+      <div class="tip-card"><span class="t-icon">⚠️</span><div><h4>What counts as an emergency?</h4><p>Job loss, medical bill, urgent travel, appliance breakdown. A sale or party does NOT count as an emergency.</p></div></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ── WITHDRAW MODAL ── -->
+<div class="modal-overlay" id="withdraw-modal">
+  <div class="modal">
+    <h3>⚠️ Withdraw from Emergency Fund</h3>
+    <p>Only use this for a genuine emergency. Withdrawals will reduce your safety net and should be replenished as soon as possible.</p>
+    <div class="form-group">
+      <label>Amount to Withdraw (₹)</label>
+      <div class="input-pre" style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-muted);font-size:0.82rem">₹</span><input type="number" id="withdraw-amt" placeholder="e.g. 5000" min="1" style="padding-left:26px"/></div>
+    </div>
+    <div class="form-group" style="margin-top:12px">
+      <label>Reason for withdrawal</label>
+      <input type="text" id="withdraw-reason" placeholder="e.g. Medical bill, Urgent travel…" maxlength="80"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" style="background:var(--danger)" onclick="confirmWithdraw()">Confirm Withdrawal</button>
+      <button class="btn-secondary" onclick="closeWithdrawModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCENARIO MODAL ── -->
+<div class="modal-overlay" id="scenario-modal">
+  <div class="modal">
+    <h3 id="sc-modal-title">Scenario</h3>
+    <p id="sc-modal-body"></p>
+    <div style="background:var(--paper-warm);border-radius:10px;padding:14px;font-size:0.85rem;color:var(--ink-soft);margin-top:4px" id="sc-modal-advice"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeScenarioModal()">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-bottom">
+    <span class="footer-logo-text">Budget<span>Buddy</span></span>
+    <p>© 2025 BudgetBuddy. All rights reserved.</p>
+    <p>Made with ♥ for students everywhere.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── AUTH ──
+(function(){
+  if(!localStorage.getItem('bb_token')){
+    document.getElementById('lock-screen').style.display='flex';
+    document.getElementById('main-content').style.display='none';
+    document.querySelector('nav').style.display='none';
+    document.querySelector('footer').style.display='none';
+    document.querySelector('.sidebar').style.display='none';
+    document.querySelector('.sidebar-overlay').style.display='none';
+  } else {
+    document.getElementById('lock-screen').style.display='none';
+    document.querySelector('nav').style.display='';
+    document.querySelector('footer').style.display='';
+    document.querySelector('.sidebar').style.display='';
+    document.querySelector('.sidebar-overlay').style.display='';
+  }
+})();
+
+// ── SIDEBAR ──
+const hamburger = document.getElementById('hamburger');
+const sidebar   = document.getElementById('sidebar');
+const overlay   = document.getElementById('sidebar-overlay');
+hamburger.addEventListener('click',()=>{
+  const open = sidebar.classList.toggle('open');
+  overlay.classList.toggle('visible',open);
+  hamburger.classList.toggle('open',open);
+});
+overlay.addEventListener('click',()=>{
+  sidebar.classList.remove('open');
+  overlay.classList.remove('visible');
+  hamburger.classList.remove('open');
+});
+
+
+// ── LOGOUT ──
+function doLogout(){ localStorage.removeItem('bb_token'); localStorage.removeItem('bb_user'); window.location.href='index.html'; }
+document.getElementById('nav-logout').addEventListener('click',e=>{e.preventDefault();doLogout();});
+document.getElementById('sidebar-logout').addEventListener('click',e=>{e.preventDefault();doLogout();});
+
+// ── TOAST ──
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  setTimeout(()=>t.className='toast',3200);
+}
+
+// ── MONTH CHIPS ──
+let targetMonths = 3;
+document.getElementById('month-chips').addEventListener('click',e=>{
+  const opt = e.target.closest('.chip-opt');
+  if(!opt) return;
+  document.querySelectorAll('#month-chips .chip-opt').forEach(o=>o.classList.remove('selected'));
+  opt.classList.add('selected');
+  targetMonths = parseInt(opt.dataset.val);
+  recalcTarget();
+});
+
+// ── RECALC TARGET PREVIEW ──
+function recalcTarget(){
+  const exp  = parseFloat(document.getElementById('cfg-expenses').value)||0;
+  const cont = parseFloat(document.getElementById('cfg-contribution').value)||0;
+  const prev = document.getElementById('target-preview');
+  if(!exp){ prev.style.display='none'; return; }
+  const target = exp * targetMonths;
+  const months = cont > 0 ? Math.ceil(target/cont) : null;
+  let html = `🎯 Your target: <strong>₹${target.toLocaleString('en-IN')}</strong> (${targetMonths} × ₹${exp.toLocaleString('en-IN')}/month).`;
+  if(months) html += `<br/>⏱️ At ₹${cont.toLocaleString('en-IN')}/month, you'll reach it in <strong>~${months} months</strong>.`;
+  if(target >= 50000) html += `<br/>📈 Consider a <strong>Liquid Mutual Fund</strong> — earns 6–7% and is redeemable within 1 working day.`;
+  else html += `<br/>🏦 A <strong>separate savings account</strong> works perfectly for a fund this size.`;
+  prev.innerHTML = html;
+  prev.style.display='block';
+}
+
+
+const API   = 'http://localhost:3000/api';
+const token = localStorage.getItem('bb_token');
+const headers = { 'Content-Type':'application/json', 'Authorization':'Bearer '+token };
+let efData = null; // holds fund from backend
+let efTx   = [];   // holds transactions from backend
+
+function getTotalSaved(){
+  return efData ? parseFloat(efData.current || 0) : 0;
+}
+
+// ── INIT ──
+async function init(){
+  try {
+    const res  = await fetch(API+'/emergency', { headers });
+    const data = await res.json();
+    efData = data.fund;
+
+    const txRes  = await fetch(API+'/emergency/transactions', { headers });
+    const txData = await txRes.json();
+    efTx = txData.transactions || [];
+
+    if(efData){
+      document.getElementById('cfg-expenses').value     = efData.expenses;
+      document.getElementById('cfg-income').value       = efData.income||'';
+      document.getElementById('cfg-contribution').value = efData.contribution||'';
+      document.getElementById('cfg-location').value     = efData.location||'savings';
+      targetMonths = efData.months||3;
+      document.querySelectorAll('#month-chips .chip-opt').forEach(o=>{
+        o.classList.toggle('selected', parseInt(o.dataset.val)===targetMonths);
+      });
+      recalcTarget();
+      document.getElementById('alert-setup').style.display='none';
+      document.getElementById('tracker-section').style.display='block';
+      renderTracker();
+    } else {
+      document.getElementById('alert-setup').style.display='block';
+      document.getElementById('tracker-section').style.display='none';
+    }
+    buildScenarios();
+  } catch(err){ console.error(err); }
+}
+
+// ── SAVE CONFIG ──
+async function saveConfig(){
+  const expenses = parseFloat(document.getElementById('cfg-expenses').value)||0;
+  if(!expenses){ showToast('Please enter your monthly essential expenses.','warn'); return; }
+  const body = {
+    expenses,
+    income:       parseFloat(document.getElementById('cfg-income').value)||0,
+    contribution: parseFloat(document.getElementById('cfg-contribution').value)||0,
+    location:     document.getElementById('cfg-location').value,
+    months:       targetMonths
+  };
+  try {
+    const res = await fetch(API+'/emergency/setup', { method:'POST', headers, body: JSON.stringify(body) });
+    const data = await res.json();
+    efData = data.fund;
+    document.getElementById('alert-setup').style.display='none';
+    document.getElementById('tracker-section').style.display='block';
+    document.getElementById('setup-card').style.display='none';
+    renderTracker();
+    showToast('Emergency fund configured! 🛡️','success');
+    document.getElementById('tracker-section').scrollIntoView({behavior:'smooth'});
+  } catch(err){ showToast('Error saving config.','error'); }
+}
+
+function resetAll(){
+  if(!confirm('Reset all emergency fund data? This cannot be undone.')) return;
+  localStorage.removeItem(K_CFG);
+  localStorage.removeItem(K_TX);
+  location.reload();
+}
+
+// ── RENDER TRACKER ──
+function renderTracker(){
+  const cfg    = getCfg();
+  if(!cfg) return;
+  const saved  = Math.max(0,getTotalSaved());
+  const target = cfg.target;
+  const pct    = target>0 ? Math.min(100,(saved/target)*100) : 0;
+  const months = cfg.expenses>0 ? (saved/cfg.expenses) : 0;
+
+  // ring
+  const circum = 2*Math.PI*65;
+  setTimeout(()=>{
+    const fg = document.getElementById('ring-fg');
+    fg.style.strokeDashoffset = circum - (pct/100)*circum;
+    if(pct>=100) fg.style.stroke='#34d399';
+    else if(pct>=50) fg.style.stroke='var(--accent-mid)';
+    else if(pct>=25) fg.style.stroke='var(--warn)';
+    else fg.style.stroke='var(--danger)';
+  },200);
+
+  document.getElementById('ring-pct').textContent    = pct.toFixed(0)+'%';
+  document.getElementById('pi-heading').textContent   = pct>=100 ? '🎉 Fund Complete!' : pct>=75 ? 'Almost there!' : pct>=50 ? 'Good progress!' : pct>=25 ? 'Building momentum…' : 'Getting started…';
+  document.getElementById('pi-saved').innerHTML       = `<strong>₹${saved.toLocaleString('en-IN')}</strong> saved of <strong>₹${target.toLocaleString('en-IN')}</strong> target`;
+
+  document.getElementById('stat-saved').textContent  = '₹'+saved.toLocaleString('en-IN');
+  document.getElementById('stat-needed').textContent = '₹'+Math.max(0,target-saved).toLocaleString('en-IN');
+
+  const needed = Math.max(0,target-saved);
+  if(cfg.contribution>0 && needed>0){
+    const mos = Math.ceil(needed/cfg.contribution);
+    const eta = new Date(); eta.setMonth(eta.getMonth()+mos);
+    document.getElementById('stat-eta').textContent   = eta.toLocaleDateString('en-IN',{month:'short',year:'numeric'});
+    document.getElementById('stat-eta-sub').textContent = `~${mos} months at ₹${cfg.contribution.toLocaleString('en-IN')}/mo`;
+  } else if(pct>=100){
+    document.getElementById('stat-eta').textContent = '✅ Done';
+    document.getElementById('stat-eta-sub').textContent = 'Fund fully built';
+  } else {
+    document.getElementById('stat-eta').textContent = '—';
+    document.getElementById('stat-eta-sub').textContent = 'Set a monthly contribution';
+  }
+
+  // hero
+  document.getElementById('hero-months').textContent    = months.toFixed(1);
+  document.getElementById('hero-target-disp').textContent = `Target: ${cfg.months} months`;
+
+  // milestones
+  const milestones = [
+    { pct:25,  label:'Starter Shield',   icon:'🌱', val: target*0.25 },
+    { pct:50,  label:'Half Way',         icon:'⚡', val: target*0.5  },
+    { pct:100, label:'1 Month Covered',  icon:'🛡️', val: cfg.expenses },
+    { pct:100*(cfg.months>=3?3:cfg.months)/cfg.months, label:`${cfg.months>=3?3:cfg.months} Months Covered`, icon:'💪', val: cfg.expenses*Math.min(3,cfg.months) },
+    { pct:100, label:'Fund Complete! 🎉', icon:'🏆', val: target },
+  ].filter((m,i,arr)=>arr.findIndex(x=>x.label===m.label)===i);
+
+  const ml = document.getElementById('milestones-list');
+  ml.innerHTML='';
+  milestones.forEach(m=>{
+    const progress = target>0?(saved/m.val*100):0;
+    const done = saved >= m.val;
+    const isCurrent = !done && saved < m.val && (milestones.findIndex(x=>!( Math.max(0,getTotalSaved())>=x.val))=== milestones.indexOf(m));
+    const div = document.createElement('div');
+    div.className='milestone';
+    div.innerHTML=`
+      <div class="ms-dot ${done?'done':isCurrent?'current':'pending'}">${done?'✓':m.icon}</div>
+      <span class="ms-label"><strong>${m.label}</strong> — ₹${m.val.toLocaleString('en-IN')}</span>
+      ${done?`<span class="ms-badge">Done ✓</span>`:''}
+    `;
+    ml.appendChild(div);
+  });
+
+  // alerts
+  document.getElementById('alert-low').style.display   = (pct<(100/cfg.months) && pct<100) ? 'block' : 'none';
+  document.getElementById('alert-done').style.display  = pct>=100 ? 'block' : 'none';
+
+  renderTxHistory();
+}
+
+// ── TRANSACTIONS ──
+async function addTransaction(type){
+  const amt  = parseFloat(document.getElementById('tx-amount').value)||0;
+  const note = document.getElementById('tx-note').value.trim()||'Deposit';
+  if(amt<=0){ showToast('Please enter a valid amount.','warn'); return; }
+  const endpoint = type==='deposit' ? '/emergency/deposit' : '/emergency/withdraw';
+  try {
+    const res  = await fetch(API+endpoint, { method:'POST', headers, body: JSON.stringify({ amount:amt, note }) });
+    const data = await res.json();
+    efData = data.fund;
+    document.getElementById('tx-amount').value='';
+    document.getElementById('tx-note').value='';
+    await init(); // refresh
+    showToast(type==='deposit'?`₹${amt.toLocaleString('en-IN')} deposited 💰`:`₹${amt.toLocaleString('en-IN')} withdrawn`,'success');
+  } catch(err){ showToast('Error processing transaction.','error'); }
+}
+function renderTxHistory(){
+  const tx   = getTx();
+  const card = document.getElementById('tx-history-card');
+  const list = document.getElementById('tx-list');
+  if(!tx.length){ card.style.display='none'; return; }
+  card.style.display='block';
+  list.innerHTML='';
+  tx.slice(0,10).forEach(t=>{
+    const d = new Date(t.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    const div=document.createElement('div');
+    div.className='tx-item';
+    div.innerHTML=`
+      <div class="tx-icon ${t.type==='deposit'?'dep':'with'}">${t.type==='deposit'?'💰':'💸'}</div>
+      <div class="tx-details"><div class="tx-name">${t.note}</div><div class="tx-date">${d}</div></div>
+      <div class="tx-amount ${t.type==='deposit'?'pos':'neg'}">${t.type==='deposit'?'+':'-'}₹${t.amount.toLocaleString('en-IN')}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function clearHistory(){
+  if(!confirm('Clear all transaction history?')) return;
+  saveTx([]);
+  renderTracker();
+  showToast('History cleared.');
+}
+
+// ── WITHDRAW MODAL ──
+function openWithdrawModal(){
+  document.getElementById('withdraw-amt').value='';
+  document.getElementById('withdraw-reason').value='';
+  document.getElementById('withdraw-modal').classList.add('open');
+}
+function closeWithdrawModal(){ document.getElementById('withdraw-modal').classList.remove('open'); }
+async function confirmWithdraw(){
+  const amt    = parseFloat(document.getElementById('withdraw-amt').value)||0;
+  const reason = document.getElementById('withdraw-reason').value.trim()||'Emergency withdrawal';
+  if(amt<=0){ showToast('Please enter a valid amount.','warn'); return; }
+  const saved = getTotalSaved();
+  if(amt>saved){ showToast('Cannot withdraw more than your saved amount.','warn'); return; }
+  try {
+    const res  = await fetch(API+'/emergency/withdraw', {
+      method:'POST', headers,
+      body: JSON.stringify({ amount:amt, note:reason })
+    });
+    const data = await res.json();
+    efData = data.fund;
+    closeWithdrawModal();
+    await init();
+    showToast(`₹${amt.toLocaleString('en-IN')} withdrawn. Remember to replenish soon!`);
+  } catch(err){ showToast('Error processing withdrawal.','error'); }
+}
+document.getElementById('withdraw-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('withdraw-modal')) closeWithdrawModal(); });
+
+// ── SCENARIOS ──
+const SCENARIOS = [
+  { icon:'🏥', title:'Medical Bill',      desc:'Sudden hospitalisation or major treatment', cost:15000, essential:true },
+  { icon:'🔧', title:'Phone Repair',      desc:'Screen crack, water damage, replacement',   cost:8000,  essential:false },
+  { icon:'🚂', title:'Emergency Travel',  desc:'Urgent family travel to hometown',          cost:5000,  essential:true  },
+  { icon:'💼', title:'Job Loss',          desc:'1 month without income',                    cost:null,  essential:true  },
+  { icon:'🏠', title:'Rent Arrears',      desc:'2 months unpaid rent emergency',             cost:null,  essential:true  },
+  { icon:'🔌', title:'Appliance Breakdown',desc:'Fridge, washing machine, or AC failure',   cost:12000, essential:false },
+  { icon:'🦷', title:'Dental Emergency',  desc:'Root canal or emergency extraction',        cost:6000,  essential:false },
+  { icon:'🚗', title:'Vehicle Repair',    desc:'Major breakdown or accident damage',        cost:20000, essential:false },
+];
+
+function buildScenarios(){
+  const grid = document.getElementById('scenario-grid');
+  grid.innerHTML='';
+  const cfg = getCfg();
+  SCENARIOS.forEach(s=>{
+    const cost = s.cost || (cfg ? cfg.expenses : 10000);
+    const saved = Math.max(0,getTotalSaved());
+    const canHandle = saved >= cost;
+    const card = document.createElement('div');
+    card.className='scenario-card';
+    card.innerHTML=`
+      <div class="sc-icon">${s.icon}</div>
+      <h4>${s.title}</h4>
+      <p>${s.desc}</p>
+      <div class="sc-cost">Est. ₹${cost.toLocaleString('en-IN')} ${canHandle?'<span style="color:var(--accent)">✅ Covered</span>':'<span style="color:var(--danger)">⚠️ Not covered</span>'}</div>
+    `;
+    card.onclick=()=>openScenario(s, cost, canHandle, saved);
+    grid.appendChild(card);
+  });
+}
+
+function openScenario(s, cost, covered, saved){
+  document.getElementById('sc-modal-title').textContent = s.icon+' '+s.title;
+  document.getElementById('sc-modal-body').textContent  = `Estimated cost: ₹${cost.toLocaleString('en-IN')}. Your current fund: ₹${saved.toLocaleString('en-IN')}.`;
+  const cfg = getCfg();
+  let advice = '';
+  if(covered){
+    const remaining = saved-cost;
+    advice = `✅ Your emergency fund can cover this. After using it, you'd have ₹${remaining.toLocaleString('en-IN')} remaining. Remember to replenish back to your target of ₹${cfg?cfg.target.toLocaleString('en-IN'):'your target'} as soon as possible.`;
+  } else {
+    const shortfall = cost-saved;
+    const mos = cfg&&cfg.contribution>0 ? Math.ceil(shortfall/cfg.contribution) : null;
+    advice = `⚠️ Your fund currently falls short by ₹${shortfall.toLocaleString('en-IN')}. ${mos?`At ₹${cfg.contribution.toLocaleString('en-IN')}/month, you'd be covered in ~${mos} more months. `:''}Build your fund to handle this scenario confidently.`;
+  }
+  document.getElementById('sc-modal-advice').textContent = advice;
+  document.getElementById('scenario-modal').classList.add('open');
+}
+function closeScenarioModal(){ document.getElementById('scenario-modal').classList.remove('open'); }
+document.getElementById('scenario-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('scenario-modal')) closeScenarioModal(); });
+if(localStorage.getItem('bb_token')){
+  init();
+}
+</script>
+</body>
+</html>

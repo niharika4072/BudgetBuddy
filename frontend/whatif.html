@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>What-If Simulation — BudgetBuddy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --ink:#1a1a1a; --ink-soft:#4a4a4a; --ink-muted:#8a8a8a;
+      --paper:#fafaf8; --paper-warm:#f5f3ee;
+      --accent:#2d6a4f; --accent-light:#d8f3dc; --accent-mid:#52b788; --accent-dark:#1b4332;
+      --border:#e0ddd7; --white:#ffffff;
+      --nav-h:68px; --danger:#c0392b; --warn:#d97706; --sidebar-w:260px;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); font-size:15px; line-height:1.6; overflow-x:hidden; }
+
+    /* ── LOCK SCREEN ── */
+    #lock-screen {
+      position:fixed; inset:0; background:var(--paper); z-index:9999;
+      display:flex; align-items:center; justify-content:center;
+      flex-direction:column; gap:20px; text-align:center; padding:24px;
+    }
+    .lock-icon { width:72px; height:72px; background:var(--accent-light); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; }
+    #lock-screen h2 { font-family:'DM Serif Display',serif; font-size:1.8rem; letter-spacing:-0.02em; }
+    #lock-screen p { color:var(--ink-soft); max-width:340px; font-size:0.92rem; }
+    .btn-go-login { background:var(--accent); color:white; text-decoration:none; padding:12px 32px; border-radius:10px; font-weight:600; font-size:0.95rem; transition:background 0.2s; }
+    .btn-go-login:hover { background:var(--accent-dark); }
+
+    /* ── NAV ── */
+    nav {
+      position:fixed; top:0; left:0; right:0; height:var(--nav-h);
+      background:var(--white); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 5%; z-index:500; box-shadow:0 1px 12px rgba(0,0,0,0.05);
+    }
+    .nav-left { display:flex; align-items:center; gap:14px; }
+    .hamburger {
+      width:36px; height:36px; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:5px; cursor:pointer;
+      border-radius:8px; border:1.5px solid var(--border); background:transparent;
+      transition:background 0.2s; flex-shrink:0;
+    }
+    .hamburger:hover { background:var(--paper-warm); }
+    .hamburger span { display:block; width:16px; height:1.5px; background:var(--ink); border-radius:2px; transition:transform 0.25s,opacity 0.25s; }
+    .hamburger.open span:nth-child(1) { transform:translateY(6.5px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity:0; }
+    .hamburger.open span:nth-child(3) { transform:translateY(-6.5px) rotate(-45deg); }
+    .logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo-icon { width:36px; height:36px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+    .logo-icon svg { width:20px; height:20px; fill:white; }
+    .logo-text { font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--ink); }
+    .logo-text span { color:var(--accent); }
+    .nav-links { display:flex; align-items:center; gap:6px; list-style:none; }
+    .nav-links a { text-decoration:none; color:var(--ink-soft); font-size:0.87rem; font-weight:500; padding:8px 13px; border-radius:8px; transition:background 0.2s,color 0.2s; }
+    .nav-links a:hover { background:var(--paper-warm); color:var(--ink); }
+    .nav-links .btn-logout { background:#fee2e2; color:var(--danger); border-radius:8px; padding:8px 18px; font-weight:600; }
+    .nav-links .btn-logout:hover { background:#fecaca; }
+
+    /* ── SIDEBAR ── */
+    .sidebar-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.25); z-index:400; opacity:0; pointer-events:none; transition:opacity 0.25s; }
+    .sidebar-overlay.visible { opacity:1; pointer-events:all; }
+    .sidebar {
+      position:fixed; top:var(--nav-h); left:0; bottom:0; width:var(--sidebar-w);
+      background:var(--white); border-right:1px solid var(--border); z-index:450;
+      padding:24px 0; transform:translateX(-100%);
+      transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); overflow-y:auto;
+    }
+    .sidebar.open { transform:translateX(0); }
+    .sidebar-section { padding:0 16px; margin-bottom:8px; }
+    .sidebar-section-label { font-size:0.7rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-muted); padding:6px 8px 8px; }
+    .sidebar a { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink-soft); font-size:0.88rem; font-weight:500; padding:9px 12px; border-radius:9px; transition:background 0.15s,color 0.15s; margin-bottom:2px; }
+    .sidebar a:hover, .sidebar a.active { background:var(--accent-light); color:var(--accent); }
+    .sidebar a .s-icon { font-size:1rem; width:20px; text-align:center; }
+    .sidebar-divider { border:none; border-top:1px solid var(--border); margin:10px 16px; }
+
+    /* ── MAIN ── */
+    main { padding-top:calc(var(--nav-h) + 40px); padding-bottom:80px; max-width:860px; margin:0 auto; padding-left:24px; padding-right:24px; }
+
+    .page-header { margin-bottom:32px; }
+    .breadcrumb { font-size:0.78rem; color:var(--ink-muted); margin-bottom:8px; display:flex; gap:6px; align-items:center; }
+    .breadcrumb a { color:var(--ink-muted); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--accent); }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.8rem,4vw,2.5rem); letter-spacing:-0.03em; line-height:1.15; }
+    .page-header p { color:var(--ink-soft); font-size:0.92rem; margin-top:8px; max-width:560px; }
+
+    /* ── INPUT CARD ── */
+    .input-card {
+      background:var(--white); border:1.5px solid var(--border);
+      border-radius:16px; padding:28px; margin-bottom:20px;
+    }
+    .card-title { font-family:'DM Serif Display',serif; font-size:1.15rem; letter-spacing:-0.02em; color:var(--ink); margin-bottom:6px; }
+    .card-sub { font-size:0.82rem; color:var(--ink-muted); margin-bottom:18px; }
+
+    /* context strip */
+    .context-strip {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;
+    }
+    @media(max-width:540px){ .context-strip{ grid-template-columns:1fr 1fr; } }
+    .ctx-field { display:flex; flex-direction:column; gap:4px; }
+    .ctx-field label { font-size:0.74rem; font-weight:600; color:var(--ink-muted); letter-spacing:0.04em; text-transform:uppercase; }
+    .ctx-field input {
+      border:1.5px solid var(--border); border-radius:8px; padding:8px 12px;
+      font-family:'DM Sans',sans-serif; font-size:0.88rem; color:var(--ink);
+      background:var(--paper); outline:none; transition:border-color 0.2s;
+    }
+    .ctx-field input:focus { border-color:var(--accent-mid); }
+
+    /* textarea */
+    .scenario-wrap { position:relative; }
+    textarea {
+      width:100%; min-height:110px; resize:vertical;
+      border:1.5px solid var(--border); border-radius:10px;
+      padding:14px 16px 36px; font-family:'DM Sans',sans-serif;
+      font-size:0.92rem; line-height:1.6; color:var(--ink);
+      background:var(--paper); outline:none;
+      transition:border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea:focus { border-color:var(--accent-mid); box-shadow:0 0 0 3px rgba(82,183,136,0.12); }
+    textarea::placeholder { color:var(--ink-muted); }
+    .word-count {
+      position:absolute; bottom:10px; right:14px;
+      font-size:0.72rem; color:var(--ink-muted); pointer-events:none;
+    }
+    .word-count.warn { color:var(--warn); }
+    .word-count.over { color:var(--danger); font-weight:600; }
+
+    
+    /* example chips */
+    .example-chips { display:flex; flex-wrap:wrap; gap:7px; margin:14px 0; }
+    .chip {
+      background:var(--paper-warm); border:1px solid var(--border);
+      border-radius:20px; padding:5px 13px; font-size:0.76rem;
+      font-weight:500; color:var(--ink-soft); cursor:pointer;
+      transition:background 0.15s, border-color 0.15s, color 0.15s;
+      font-family:'DM Sans',sans-serif;
+    }
+    .chip:hover { background:var(--accent-light); border-color:#b7e4c7; color:var(--accent); }
+
+    .btn-simulate {
+      background:var(--accent); color:white; border:none;
+      border-radius:10px; padding:12px 30px; font-family:'DM Sans',sans-serif;
+      font-size:0.95rem; font-weight:600; cursor:pointer;
+      transition:background 0.2s, transform 0.15s; margin-top:14px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .btn-simulate:hover { background:var(--accent-dark); transform:translateY(-1px); }
+    .btn-simulate:disabled { background:var(--ink-muted); cursor:not-allowed; transform:none; }
+    .btn-simulate .spinner {
+      width:16px; height:16px; border:2px solid rgba(255,255,255,0.4);
+      border-top-color:white; border-radius:50%;
+      animation:spin 0.7s linear infinite; display:none;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ── RESULT AREA ── */
+    #result-area { display:none; }
+
+    .result-card {
+      background:var(--white); border:1.5px solid var(--accent-mid);
+      border-radius:16px; padding:28px; margin-bottom:20px;
+      animation:slideUp 0.4s ease;
+    }
+    @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    .result-title {
+      font-family:'DM Serif Display',serif; font-size:1.2rem;
+      letter-spacing:-0.02em; color:var(--ink); margin-bottom:18px;
+      display:flex; align-items:center; gap:8px;
+    }
+
+    /* before/after grid */
+    .ba-grid { display:grid; grid-template-columns:1fr 40px 1fr; gap:0; align-items:center; margin-bottom:22px; }
+    .ba-box { border-radius:12px; padding:18px; }
+    .ba-box.before { background:var(--paper-warm); border:1.5px solid var(--border); }
+    .ba-box.after  { background:var(--accent-light); border:1.5px solid #b7e4c7; }
+    .ba-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--ink-muted); margin-bottom:8px; }
+    .ba-arrow { text-align:center; font-size:1.4rem; color:var(--accent); }
+    .ba-row { display:flex; justify-content:space-between; font-size:0.83rem; margin-bottom:5px; }
+    .ba-row .r-label { color:var(--ink-soft); }
+    .ba-row .r-val   { font-weight:600; color:var(--ink); }
+    .ba-row .r-val.accent { color:var(--accent); }
+    .ba-row .r-val.red    { color:var(--danger); }
+    .ba-row .r-val.amber  { color:var(--warn); }
+
+    /* impact chips */
+    .impact-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+    .impact-chip {
+      display:flex; align-items:center; gap:6px;
+      border-radius:9px; padding:8px 14px; font-size:0.82rem; font-weight:500;
+    }
+    .impact-chip.positive { background:var(--accent-light); color:var(--accent-dark); }
+    .impact-chip.negative { background:#fee2e2; color:#991b1b; }
+    .impact-chip.neutral  { background:#f3f4f6; color:var(--ink-soft); }
+
+    /* verdict */
+    .verdict-box {
+      border-left:4px solid var(--accent); background:var(--paper-warm);
+      border-radius:0 10px 10px 0; padding:16px 18px;
+      font-size:0.88rem; line-height:1.7; color:var(--ink-soft);
+    }
+    .verdict-box strong { color:var(--ink); }
+
+    /* suggestion list */
+    .suggestion-list { list-style:none; display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+    .suggestion-list li {
+      display:flex; gap:10px; font-size:0.84rem; color:var(--ink-soft);
+      background:var(--paper-warm); border-radius:9px; padding:10px 14px;
+      align-items:flex-start;
+    }
+    .suggestion-list li::before { content:attr(data-icon); flex-shrink:0; }
+
+    /* ── HISTORY ── */
+    #history-area { display:none; margin-top:10px; }
+    .history-title { font-family:'DM Serif Display',serif; font-size:1.05rem; color:var(--ink); margin-bottom:12px; }
+    .history-item {
+      background:var(--white); border:1px solid var(--border); border-radius:10px;
+      padding:12px 16px; margin-bottom:8px; cursor:pointer;
+      transition:border-color 0.2s, background 0.2s;
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+    }
+    .history-item:hover { border-color:var(--accent-mid); background:var(--accent-light); }
+    .history-item .h-q { font-size:0.84rem; color:var(--ink-soft); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .history-item .h-tag { font-size:0.72rem; font-weight:600; background:var(--accent-light); color:var(--accent); padding:2px 8px; border-radius:20px; flex-shrink:0; }
+    .btn-clear-history { background:none; border:none; font-size:0.78rem; color:var(--ink-muted); cursor:pointer; text-decoration:underline; font-family:'DM Sans',sans-serif; margin-top:4px; }
+
+    /* ── FOOTER ── */
+    footer { background:var(--ink); color:#888; padding:28px 5%; }
+    .footer-bottom { max-width:860px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+    .footer-bottom p { font-size:0.78rem; color:#555; }
+    .footer-logo-text { font-family:'DM Serif Display',serif; font-size:1rem; color:#e8e5df; }
+    .footer-logo-text span { color:var(--accent-mid); }
+  </style>
+</head>
+<body>
+
+<!-- ── LOCK SCREEN ── -->
+<div id="lock-screen">
+  <div class="lock-icon">🔒</div>
+  <h2>Login Required</h2>
+  <p>You need to be logged in to use What-If Simulation and other BudgetBuddy features.</p>
+  <a href="login.html" class="btn-go-login">Go to Login →</a>
+  <a href="index.html" style="font-size:0.82rem;color:var(--ink-muted);text-decoration:none;margin-top:4px;">← Back to Home</a>
+</div>
+
+<!-- ── SIDEBAR OVERLAY ── -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Main</div>
+    <a href="dashboard.html"><span class="s-icon">📊</span> Dashboard</a>
+    <a href="profile.html"><span class="s-icon">👤</span> My Profile</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Tools</div>
+    <a href="smartbalace.html"><span class="s-icon">🧮</span> Smart Balance Calculator</a>
+    <a href="whatif.html"class="active"><span class="s-icon">📈</span> What-If Simulation</a>
+    <a href="savinggoal.html"><span class="s-icon">🎯</span> Savings Goal Tracker</a>
+    <a href="emergencyf.html"><span class="s-icon">🛡️</span> Emergency Fund Tracker</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Learn</div>
+    <a href="tips.html"><span class="s-icon">💡</span> Money Tips</a>
+    <a href="guide.html"><span class="s-icon">📖</span> User Guide</a>
+  </div>
+  <hr class="sidebar-divider"/>
+  <div class="sidebar-section">
+    <a href="contact.html"><span class="s-icon">💬</span> Contact Us</a>
+  </div>
+  <div class="sidebar-section">
+    <a href="#" id="sidebar-logout" style="color:var(--danger)"><span class="s-icon">🚪</span> Logout</a>
+  </div>
+</aside>
+
+<nav>
+  <div class="nav-left">
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="dashboard.html" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H9l3-3 3 3h-2v4z"/></svg>
+      </div>
+      <span class="logo-text">Budget<span>Buddy</span></span>
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="contact.html">Contact Us</a></li>
+    <li><a href="#" class="btn-logout" id="nav-logout">Logout</a></li>
+  </ul>
+</nav>
+
+<!-- ── MAIN ── -->
+<main id="main-content">
+
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Dashboard</a> <span>›</span> <span>What-If Simulation</span>
+    </div>
+    <h1>What-If Simulation 📈</h1>
+    <p>Describe a financial scenario in plain words. The engine will calculate the exact impact on your budget, savings, and goals — instantly.</p>
+  </div>
+
+  <!-- INPUT CARD -->
+  <div class="input-card">
+    <div class="card-title">Your Current Financial Context</div>
+    <div class="card-sub">Fill in your numbers so the simulation is accurate. These are saved in your browser.</div>
+    <div class="context-strip">
+      <div class="ctx-field">
+        <label>Monthly Income (₹)</label>
+        <input type="number" id="ctx-income" placeholder="15000" min="0"/>
+      </div>
+      <div class="ctx-field">
+        <label>Fixed Expenses (₹)</label>
+        <input type="number" id="ctx-fixed" placeholder="6000" min="0"/>
+      </div>
+      <div class="ctx-field">
+        <label>Monthly Savings (₹)</label>
+        <input type="number" id="ctx-savings" placeholder="3000" min="0"/>
+      </div>
+      <div class="ctx-field">
+        <label>Monthly Investment (₹)</label>
+        <input type="number" id="ctx-invest" placeholder="1000" min="0"/>
+      </div>
+      <div class="ctx-field">
+        <label>Current Safe-to-Spend (₹)</label>
+        <input type="number" id="ctx-safe" placeholder="5000" min="0"/>
+      </div>
+      <div class="ctx-field">
+        <label>Days Left in Month</label>
+        <input type="number" id="ctx-days" placeholder="20" min="1" max="31"/>
+      </div>
+    </div>
+
+    <div class="card-title" style="margin-top:4px">Describe Your Scenario</div>
+    <div class="card-sub">Write what you want to simulate — up to 60 words. Be specific with amounts and timeframes.</div>
+
+    <div class="example-chips">
+      <button class="chip" onclick="fillExample(this)">What if I spend ₹2000 on a phone this week?</button>
+      <button class="chip" onclick="fillExample(this)">What if I increase my savings by ₹500 every month?</button>
+      <button class="chip" onclick="fillExample(this)">What if I start a SIP of ₹1000 per month for 5 years?</button>
+      <button class="chip" onclick="fillExample(this)">What if I cut my food budget by ₹800 this month?</button>
+      <button class="chip" onclick="fillExample(this)">What if I take a ₹10000 loan and repay ₹1000 per month?</button>
+      <button class="chip" onclick="fillExample(this)">What if I invest ₹5000 in PPF for 15 years?</button>
+      <button class="chip" onclick="fillExample(this)">What if I reduce my subscriptions by ₹400?</button>
+    </div>
+
+    <div class="scenario-wrap">
+      <textarea id="scenario-input" placeholder="e.g. What if I spend ₹3000 on a trip next month? How will it affect my savings goal for a laptop?" maxlength="500" oninput="countWords()"></textarea>
+      <span class="word-count" id="word-count">0 / 60 words</span>
+    </div>
+
+    <button class="btn-simulate" id="btn-sim" onclick="runSimulation()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+      <span id="btn-text">Run Simulation</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+  </div>
+
+  <!-- RESULT AREA -->
+  <div id="result-area">
+    <div class="result-card" id="result-card">
+      <div class="result-title" id="result-title">📊 Simulation Result</div>
+
+      <!-- Before / After -->
+      <div class="ba-grid">
+        <div class="ba-box before">
+          <div class="ba-label">Before</div>
+          <div id="before-rows"></div>
+        </div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-box after">
+          <div class="ba-label">After</div>
+          <div id="after-rows"></div>
+        </div>
+      </div>
+
+      <!-- Impact chips -->
+      <div class="impact-row" id="impact-row"></div>
+
+      <!-- Verdict -->
+      <div class="verdict-box" id="verdict-box"></div>
+
+      <!-- Suggestions -->
+      <ul class="suggestion-list" id="suggestion-list" style="margin-top:14px"></ul>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="history-area">
+    <div class="history-title">🕐 Recent Simulations</div>
+    <div id="history-list"></div>
+    <button class="btn-clear-history" onclick="clearHistory()">Clear history</button>
+  </div>
+
+</main>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-bottom">
+    <span class="footer-logo-text">Budget<span>Buddy</span></span>
+    <p>© 2025 BudgetBuddy. All rights reserved.</p>
+    <p>Made with ♥ for students everywhere.</p>
+  </div>
+</footer>
+
+<script>
+  // ── CONTEXT PERSIST ──
+const CTX_FIELDS = ['ctx-income','ctx-fixed','ctx-savings','ctx-invest','ctx-safe','ctx-days'];
+function loadContext(){
+  const saved = JSON.parse(localStorage.getItem('bb_ctx')||'{}');
+  CTX_FIELDS.forEach(id=>{
+    if(saved[id]) document.getElementById(id).value = saved[id];
+  });
+}
+  (function(){
+  if(!localStorage.getItem('bb_token')){
+    document.getElementById('lock-screen').style.display='flex';
+    document.getElementById('main-content').style.display='none';
+    document.querySelector('nav').style.display='none';
+    document.querySelector('.sidebar').style.display='none';
+    document.querySelector('.sidebar-overlay').style.display='none';
+  } else {
+    document.getElementById('lock-screen').style.display='none';
+  }
+})();
+// ── AUTH ──
+(function(){
+  const loggedIn = !!localStorage.getItem('bb_token');
+ if(!loggedIn){
+    document.getElementById('lock-screen').style.display = 'flex';
+    document.getElementById('main-content').style.display = 'none';
+    document.querySelector('nav').style.display = 'none';
+    document.querySelector('footer').style.display = 'none';
+    document.querySelector('.sidebar').style.display = 'none';
+    document.querySelector('.sidebar-overlay').style.display = 'none';
+  } else {
+    document.getElementById('lock-screen').style.display = 'none';
+    loadContext();
+    loadHistory();
+  }
+})();
+console.log("JS running");
+
+// ── SIDEBAR ──
+const hamburger = document.getElementById('hamburger');
+const sidebar   = document.getElementById('sidebar');
+const overlay   = document.getElementById('sidebar-overlay');
+hamburger.addEventListener('click',()=>{
+  const open = sidebar.classList.toggle('open');
+  overlay.classList.toggle('visible', open);
+  hamburger.classList.toggle('open', open);
+});
+overlay.addEventListener('click',()=>{
+  sidebar.classList.remove('open');
+  overlay.classList.remove('visible');
+  hamburger.classList.remove('open');
+});
+
+// ── LOGOUT ──
+function doLogout(){ localStorage.removeItem('bb_token'); localStorage.removeItem('bb_user'); window.location.href='index.html'; }
+document.getElementById('nav-logout').addEventListener('click', e=>{e.preventDefault();doLogout();});
+document.getElementById('sidebar-logout').addEventListener('click', e=>{e.preventDefault();doLogout();});
+
+
+function saveContext(){
+  const obj = {};
+  CTX_FIELDS.forEach(id=>{ obj[id] = document.getElementById(id).value; });
+  localStorage.setItem('bb_ctx', JSON.stringify(obj));
+}
+CTX_FIELDS.forEach(id=>{
+  document.getElementById(id).addEventListener('change', saveContext);
+});
+
+// ── WORD COUNT ──
+const MAX_WORDS = 60;
+function countWords(){
+  const txt = document.getElementById('scenario-input').value.trim();
+  const words = txt ? txt.split(/\s+/).length : 0;
+  const el = document.getElementById('word-count');
+  el.textContent = words + ' / ' + MAX_WORDS + ' words';
+  el.className = 'word-count' + (words > MAX_WORDS ? ' over' : words > MAX_WORDS * 0.85 ? ' warn' : '');
+  return words;
+}
+
+function fillExample(btn){
+  document.getElementById('scenario-input').value = btn.textContent.trim();
+  countWords();
+  document.getElementById('scenario-input').focus();
+}
+
+// ── HISTORY ──
+function loadHistory(){
+  const hist = JSON.parse(localStorage.getItem('bb_sim_history')||'[]');
+  if(hist.length){
+    document.getElementById('history-area').style.display = 'block';
+    renderHistory(hist);
+  }
+}
+function saveToHistory(q, tag){
+  let hist = JSON.parse(localStorage.getItem('bb_sim_history')||'[]');
+  hist.unshift({q, tag, ts: Date.now()});
+  hist = hist.slice(0, 8);
+  localStorage.setItem('bb_sim_history', JSON.stringify(hist));
+}
+function renderHistory(hist){
+  const list = document.getElementById('history-list');
+  list.innerHTML = '';
+  hist.forEach(h=>{
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `<span class="h-q">${h.q}</span><span class="h-tag">${h.tag}</span>`;
+    div.onclick = ()=>{ document.getElementById('scenario-input').value = h.q; countWords(); };
+    list.appendChild(div);
+  });
+}
+function clearHistory(){ localStorage.removeItem('bb_sim_history'); document.getElementById('history-area').style.display='none'; }
+
+// ────────────────────────────────────────────
+//  SIMULATION ENGINE
+// ────────────────────────────────────────────
+function getCtx(){
+  return {
+    income:   parseFloat(document.getElementById('ctx-income').value)  || 15000,
+    fixed:    parseFloat(document.getElementById('ctx-fixed').value)   || 6000,
+    savings:  parseFloat(document.getElementById('ctx-savings').value) || 3000,
+    invest:   parseFloat(document.getElementById('ctx-invest').value)  || 1000,
+    safe:     parseFloat(document.getElementById('ctx-safe').value)    || 5000,
+    days:     parseFloat(document.getElementById('ctx-days').value)    || 20,
+  };
+}
+
+function extractAmount(text){
+  // finds ₹XXXX or Rs.XXXX or plain numbers with context
+  const m = text.match(/(?:₹|rs\.?\s*|inr\s*)(\d[\d,]*(?:\.\d+)?)/i)
+             || text.match(/(\d[\d,]+(?:\.\d+)?)\s*(?:rupees?|rs\.?|₹)?/i);
+  if(m) return parseFloat(m[1].replace(/,/g,''));
+  return null;
+}
+
+function extractYears(text){
+  const m = text.match(/(\d+)\s*(?:years?|yr)/i);
+  return m ? parseInt(m[1]) : null;
+}
+
+function extractMonths(text){
+  const m = text.match(/(\d+)\s*months?/i);
+  return m ? parseInt(m[1]) : null;
+}
+
+function fmt(n){ return '₹'+Math.round(n).toLocaleString('en-IN'); }
+function pct(a,b){ return b ? ((a/b)*100).toFixed(1)+'%' : '0%'; }
+
+function detectIntent(text){
+  const t = text.toLowerCase();
+  if(/spend|buy|purchase|trip|eat|food|order|spend|outing|party|shopping|clothes|gadget|phone|laptop|travel|movie/.test(t)) return 'spend';
+  if(/save|saving|increase.*sav|put.*sav|add.*sav/.test(t)) return 'save';
+  if(/cut|reduc|stop|cancel|eliminat|less.*spend|spend.*less/.test(t)) return 'cut';
+  if(/sip|mutual fund/.test(t)) return 'sip';
+  if(/ppf|public provident/.test(t)) return 'ppf';
+  if(/fd|fixed deposit/.test(t)) return 'fd';
+  if(/loan|borrow|emi/.test(t)) return 'loan';
+  if(/invest|investment/.test(t)) return 'invest';
+  if(/income|salary|earn|get.*more|increase.*income/.test(t)) return 'income';
+  if(/subscri|netflix|prime|spotify|cancel/.test(t)) return 'cut';
+  return 'spend';
+}
+
+function runSimulation(){
+  const raw = document.getElementById('scenario-input').value.trim();
+  if(!raw){ alert('Please describe your scenario first.'); return; }
+  const words = countWords();
+  if(words > MAX_WORDS){ alert('Please keep your scenario under 60 words.'); return; }
+
+  // fake brief delay for UX
+  const btn = document.getElementById('btn-sim');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btn-text');
+  btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Simulating…';
+
+  setTimeout(()=>{
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Run Simulation';
+    const result = simulate(raw);
+    renderResult(result, raw);
+    saveToHistory(raw.length > 60 ? raw.slice(0,57)+'…' : raw, result.tag);
+    loadHistory();
+    document.getElementById('result-area').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }, 700);
+}
+
+function simulate(text){
+  const ctx = getCtx();
+  const intent = detectIntent(text);
+  const amount  = extractAmount(text) || 0;
+  const years   = extractYears(text);
+  const months  = extractMonths(text);
+
+  const dailyBefore = ctx.safe / ctx.days;
+
+  let result = {
+    tag: intent,
+    before: { safe: ctx.safe, savings: ctx.savings, invest: ctx.invest, daily: dailyBefore },
+    after:  {},
+    impacts: [],
+    verdict: '',
+    suggestions: []
+  };
+
+  if(intent === 'spend'){
+    const newSafe   = ctx.safe - amount;
+    const newDaily  = newSafe > 0 ? newSafe / ctx.days : 0;
+    const pctSpent  = ctx.safe > 0 ? (amount / ctx.safe * 100) : 0;
+    result.after    = { safe: newSafe, savings: ctx.savings, invest: ctx.invest, daily: newDaily };
+    result.tag      = 'Spending';
+
+    result.impacts.push({ type: pctSpent > 50 ? 'negative' : 'neutral', text: `Uses ${pctSpent.toFixed(0)}% of safe-to-spend` });
+    result.impacts.push({ type: newSafe < 0 ? 'negative' : newSafe < 1000 ? 'negative' : 'positive', text: newSafe < 0 ? 'Budget exceeded!' : `${fmt(newSafe)} remaining` });
+    result.impacts.push({ type: 'neutral', text: `New daily limit: ${fmt(newDaily)}/day` });
+
+    if(newSafe < 0){
+      result.verdict = `<strong>⚠️ Budget shortfall of ${fmt(Math.abs(newSafe))}.</strong> This expense exceeds your remaining safe-to-spend balance. You would need to dip into your savings of ${fmt(ctx.savings)} to cover the gap.`;
+      result.suggestions.push({ icon:'💡', text:`Split this cost over 2 months — spend ${fmt(amount/2)} now and ${fmt(amount/2)} next month.` });
+      result.suggestions.push({ icon:'✂️', text:`Look for cheaper alternatives or wait until next month when your balance resets.` });
+      result.suggestions.push({ icon:'🎯', text:`Consider reducing one fixed expense temporarily to make room for this purchase.` });
+    } else if(pctSpent > 50){
+      result.verdict = `<strong>Significant but manageable.</strong> Spending ${fmt(amount)} will consume ${pctSpent.toFixed(0)}% of your free balance. Your new daily limit drops to <strong>${fmt(newDaily)}/day</strong> for the rest of the month — that's tight. Plan other expenses carefully.`;
+      result.suggestions.push({ icon:'📋', text:`Track every small expense closely this month to stay within the reduced daily limit.` });
+      result.suggestions.push({ icon:'🍱', text:`Reduce discretionary spending (food delivery, outings) for the next ${ctx.days} days.` });
+    } else {
+      result.verdict = `<strong>✅ This expense is within your budget.</strong> After spending ${fmt(amount)}, you'll still have ${fmt(newSafe)} left — giving you a comfortable ${fmt(newDaily)}/day for the rest of the month. Savings remain untouched.`;
+      result.suggestions.push({ icon:'💰', text:`Great! Try to keep other discretionary spending below ${fmt(newDaily*0.6)}/day to cushion yourself.` });
+    }
+
+  } else if(intent === 'save'){
+    const extra    = amount || ctx.savings * 0.1;
+    const newSav   = ctx.savings + extra;
+    const newSafe  = ctx.safe - extra;
+    const newDaily = newSafe > 0 ? newSafe / ctx.days : 0;
+    const yearly   = newSav * 12;
+    result.after   = { safe: newSafe, savings: newSav, invest: ctx.invest, daily: newDaily };
+    result.tag     = 'Savings Boost';
+    result.impacts.push({ type:'positive', text:`+${fmt(extra)} more saved/month` });
+    result.impacts.push({ type:'positive', text:`${fmt(yearly)} saved per year` });
+    result.impacts.push({ type: newSafe < 500 ? 'negative' : 'neutral', text:`Daily limit: ${fmt(newDaily)}/day` });
+    result.verdict = `<strong>Excellent financial habit!</strong> Increasing savings by ${fmt(extra)}/month means you'll save ${fmt(yearly)} in a year. Over 3 years, that's ${fmt(yearly*3)} — enough for a solid emergency fund or a major goal. Your daily limit reduces slightly to ${fmt(newDaily)}/day.`;
+    result.suggestions.push({ icon:'🏦', text:`Automate this saving via a recurring transfer on the 1st of every month so you never forget.` });
+    result.suggestions.push({ icon:'📈', text:`Put extra savings in a Recurring Deposit (RD) or liquid mutual fund to earn 5–7% returns.` });
+
+  } else if(intent === 'cut'){
+    const cut      = amount || 500;
+    const newFixed = ctx.fixed - cut;
+    const newSafe  = ctx.safe + cut;
+    const newDaily = newSafe / ctx.days;
+    const yearly   = cut * 12;
+    result.after   = { safe: newSafe, savings: ctx.savings, invest: ctx.invest, daily: newDaily, fixedExpenses: newFixed };
+    result.tag     = 'Expense Cut';
+    result.impacts.push({ type:'positive', text:`+${fmt(cut)} freed up/month` });
+    result.impacts.push({ type:'positive', text:`${fmt(yearly)} saved per year` });
+    result.impacts.push({ type:'positive', text:`Daily limit: ${fmt(newDaily)}/day` });
+    result.verdict = `<strong>Smart move!</strong> Cutting ${fmt(cut)} monthly frees up ${fmt(yearly)} per year. Redirect this into savings or investments and over 5 years (at 12% SIP) it could grow to <strong>${fmt(Math.round(cut * ((Math.pow(1.01,60)-1)/0.01) * 1.01))}</strong>.`;
+    result.suggestions.push({ icon:'📲', text:`Review all subscriptions — even cancelling 2–3 unused ones can save ₹300–800/month.` });
+    result.suggestions.push({ icon:'🎯', text:`Move the saved amount directly to your savings goal account so you don't accidentally spend it.` });
+
+  } else if(intent === 'sip'){
+    const monthly = amount || 1000;
+    const yrs     = years || 5;
+    const r       = 0.12/12;
+    const n       = yrs * 12;
+    const maturity = monthly * (((Math.pow(1+r,n)-1)/r)*(1+r));
+    const invested = monthly * n;
+    const returns  = maturity - invested;
+    const newSafe  = ctx.safe - monthly;
+    result.after   = { safe: newSafe, savings: ctx.savings, invest: ctx.invest + monthly, daily: newSafe/ctx.days };
+    result.tag     = 'SIP Investment';
+    result.impacts.push({ type:'positive', text:`${fmt(maturity)} after ${yrs} years` });
+    result.impacts.push({ type:'positive', text:`${fmt(returns)} in returns (12% est.)` });
+    result.impacts.push({ type: newSafe < 0 ? 'negative' : 'neutral', text:`Daily limit: ${fmt(Math.max(0,newSafe)/ctx.days)}/day` });
+    result.verdict = `<strong>Excellent investment decision!</strong> A SIP of ${fmt(monthly)}/month at an estimated 12% annual return over ${yrs} years will grow your ${fmt(invested)} investment to <strong>${fmt(maturity)}</strong> — a gain of <strong>${fmt(returns)}</strong>. The power of compounding works in your favour the longer you stay invested.`;
+    result.suggestions.push({ icon:'📅', text:`Start SIP on the 5th of each month (after salary/pocket money arrives) via any mutual fund app.` });
+    result.suggestions.push({ icon:'⬆️', text:`Increase SIP by 10% every year (step-up SIP) for dramatically higher returns.` });
+    result.suggestions.push({ icon:'🛡️', text:`Choose an ELSS fund for SIP — you also get tax deduction under Sec 80C.` });
+
+  } else if(intent === 'ppf'){
+    const annual  = (amount||500) * 12;
+    const yrs     = years || 15;
+    const rate    = 0.071;
+    let bal = 0;
+    for(let i=0;i<yrs;i++) bal = (bal + annual)*(1+rate);
+    const invested = annual * yrs;
+    const newSafe  = ctx.safe - (amount||500);
+    result.after   = { safe: newSafe, savings: ctx.savings, invest: ctx.invest+(amount||500), daily: newSafe/ctx.days };
+    result.tag     = 'PPF Investment';
+    result.impacts.push({ type:'positive', text:`${fmt(bal)} at maturity` });
+    result.impacts.push({ type:'positive', text:`${fmt(bal-invested)} returns at 7.1%` });
+    result.impacts.push({ type:'positive', text:'100% Tax-free returns' });
+    result.verdict = `<strong>Great long-term choice!</strong> Investing ${fmt(amount||500)}/month in PPF for ${yrs} years gives you <strong>${fmt(bal)}</strong> — completely tax-free. PPF has a 15-year lock-in but the government-backed safety and tax benefits make it ideal for long-term goals.`;
+    result.suggestions.push({ icon:'📋', text:`Open a PPF account at any SBI or Post Office branch with just ₹500 to start.` });
+    result.suggestions.push({ icon:'💡', text:`Deposit before the 5th of April every year to get interest for that month.` });
+
+  } else if(intent === 'fd'){
+    const principal = amount || 10000;
+    const yrs       = years || 1;
+    const rate      = 0.07;
+    const maturity  = principal * Math.pow(1+rate, yrs);
+    const returns   = maturity - principal;
+    result.after    = { safe: ctx.safe, savings: ctx.savings, invest: ctx.invest, daily: ctx.safe/ctx.days };
+    result.tag      = 'Fixed Deposit';
+    result.impacts.push({ type:'positive', text:`${fmt(maturity)} at maturity` });
+    result.impacts.push({ type:'positive', text:`${fmt(returns)} interest earned` });
+    result.impacts.push({ type:'neutral',  text:'Capital 100% safe' });
+    result.verdict  = `<strong>Safe and steady.</strong> Investing ${fmt(principal)} in an FD at 7% for ${yrs} year(s) returns <strong>${fmt(maturity)}</strong>. FDs are ideal for money you might need in 1–3 years. Note: interest is taxable as per your income slab.`;
+    result.suggestions.push({ icon:'🔄', text:`Consider a Flexi FD or Sweep-in FD — your money earns FD interest but can be withdrawn anytime.` });
+    result.suggestions.push({ icon:'📊', text:`For higher returns with similar safety, compare Small Finance Bank FDs (7.5–9%).` });
+
+  } else if(intent === 'loan'){
+    const loanAmt = amount || 10000;
+    const emi     = extractAmount(text.split(/repay|emi/i)[1]||'') || Math.round(loanAmt/10);
+    const months  = emi > 0 ? Math.ceil(loanAmt/emi) : 12;
+    const interest= loanAmt * 0.12 * (months/12);
+    const newSafe  = ctx.safe - emi;
+    result.after   = { safe: newSafe, savings: ctx.savings, invest: ctx.invest, daily: Math.max(0,newSafe)/ctx.days };
+    result.tag     = 'Loan / EMI';
+    result.impacts.push({ type: newSafe < 0 ? 'negative' : 'neutral', text:`EMI: ${fmt(emi)}/month` });
+    result.impacts.push({ type:'negative', text:`${fmt(interest)} total interest cost` });
+    result.impacts.push({ type:'neutral',  text:`Repaid in ~${months} months` });
+    result.verdict = `<strong>Proceed with caution.</strong> Borrowing ${fmt(loanAmt)} with EMI of ${fmt(emi)}/month means repayment in ~${months} months. Total interest cost is approximately ${fmt(interest)}. Your daily limit drops to ${fmt(Math.max(0,newSafe)/ctx.days)}/day during repayment.`;
+    result.suggestions.push({ icon:'⚠️', text:`Only take a loan if the purpose is essential. Avoid loans for consumables (food, clothes, gadgets).` });
+    result.suggestions.push({ icon:'💰', text:`Try saving for 2–3 months first — you may not need the loan at all.` });
+    result.suggestions.push({ icon:'📉', text:`Higher EMI = less interest paid total. Increase EMI if your budget allows.` });
+
+  } else if(intent === 'income'){
+    const extra   = amount || 2000;
+    const newInc  = ctx.income + extra;
+    const newSafe = ctx.safe + extra;
+    result.after  = { safe: newSafe, savings: ctx.savings, invest: ctx.invest, daily: newSafe/ctx.days, income: newInc };
+    result.tag    = 'Income Boost';
+    result.impacts.push({ type:'positive', text:`+${fmt(extra)}/month more income` });
+    result.impacts.push({ type:'positive', text:`${fmt(extra*12)} extra per year` });
+    result.impacts.push({ type:'positive', text:`Daily limit: ${fmt(newSafe/ctx.days)}/day` });
+    result.verdict = `<strong>Positive scenario!</strong> An extra ${fmt(extra)}/month boosts your yearly earnings by ${fmt(extra*12)}. Ideally, allocate 50% of this increase to savings/investments and enjoy the rest — this prevents lifestyle inflation while building wealth.`;
+    result.suggestions.push({ icon:'📈', text:`Put 50% of extra income (${fmt(extra*0.5)}) directly into SIP or savings — don't let it merge with regular spending.` });
+    result.suggestions.push({ icon:'🎯', text:`Use the increased income to accelerate your savings goals — you could reach them months earlier.` });
+
+  } else {
+    // generic invest
+    const monthly = amount || 1000;
+    const yrs     = years || 3;
+    const r       = 0.10/12; const n = yrs*12;
+    const mat = monthly * (((Math.pow(1+r,n)-1)/r)*(1+r));
+    result.after  = { safe: ctx.safe - monthly, savings: ctx.savings, invest: ctx.invest + monthly, daily: (ctx.safe-monthly)/ctx.days };
+    result.tag    = 'Investment';
+    result.impacts.push({ type:'positive', text:`${fmt(mat)} estimated at maturity` });
+    result.impacts.push({ type:'positive', text:`${fmt(mat - monthly*n)} returns at 10%` });
+    result.verdict = `Investing ${fmt(monthly)}/month for ${yrs} years at ~10% annual return gives you an estimated <strong>${fmt(mat)}</strong>.`;
+    result.suggestions.push({ icon:'💡', text:`Compare SIP (equity), PPF (debt) and RD (safe) to choose what suits your risk appetite.` });
+  }
+
+  return result;
+}
+
+function renderResult(r, query){
+  document.getElementById('result-area').style.display = 'block';
+
+  // title
+  const icons = { spend:'🛒', save:'💰', cut:'✂️', sip:'📈', ppf:'🏦', fd:'🏧', loan:'⚠️', invest:'📊', income:'💵' };
+  document.getElementById('result-title').textContent = (icons[r.tag.toLowerCase().split(' ')[0]]||'📊') + ' ' + r.tag + ' — Simulation Result';
+
+  // before / after
+  const ctx = getCtx();
+  const beforeKeys = [
+    ['Safe-to-Spend',  fmt(r.before.safe)],
+    ['Monthly Savings',fmt(r.before.savings)],
+    ['Investment',     fmt(r.before.invest)],
+    ['Daily Limit',    fmt(r.before.daily)+'/day'],
+  ];
+  const afterKeys = [
+    ['Safe-to-Spend',  fmt(r.after.safe ?? r.before.safe), r.after.safe < r.before.safe ? 'red' : 'accent'],
+    ['Monthly Savings',fmt(r.after.savings ?? r.before.savings), r.after.savings > r.before.savings ? 'accent' : ''],
+    ['Investment',     fmt(r.after.invest ?? r.before.invest), r.after.invest > r.before.invest ? 'accent' : ''],
+    ['Daily Limit',    fmt(r.after.daily ?? r.before.daily)+'/day', r.after.daily < r.before.daily ? 'red' : 'accent'],
+  ];
+
+  document.getElementById('before-rows').innerHTML = beforeKeys.map(([l,v])=>`<div class="ba-row"><span class="r-label">${l}</span><span class="r-val">${v}</span></div>`).join('');
+  document.getElementById('after-rows').innerHTML  = afterKeys.map(([l,v,c])=>`<div class="ba-row"><span class="r-label">${l}</span><span class="r-val ${c||''}">${v}</span></div>`).join('');
+
+  // impacts
+  document.getElementById('impact-row').innerHTML = r.impacts.map(i=>`<div class="impact-chip ${i.type}">${i.type==='positive'?'✅':i.type==='negative'?'⚠️':'ℹ️'} ${i.text}</div>`).join('');
+
+  // verdict
+  document.getElementById('verdict-box').innerHTML = r.verdict;
+
+  // suggestions
+  const sl = document.getElementById('suggestion-list');
+  sl.innerHTML = r.suggestions.map(s=>`<li data-icon="${s.icon}">${s.text}</li>`).join('');
+}
+</script>
+</body>
+</html>
