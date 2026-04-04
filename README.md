@@ -5,3 +5,5 @@ A personal finance tracker for students built with HTML, node.js and Supabase.
 - User authentication with JWT
 
 - Expense tracking with Supabase database
+
+- Savings goals and emergency fund tracker
