@@ -747,23 +747,6 @@ function calcHealthScore(income, fixed, savings, invest, goals, totalSaved){
 }
 
 // ══════════════════════════════════════════
-// SIDEBAR
-// ══════════════════════════════════════════
-const hamburger = document.getElementById('hamburger');
-const sidebar   = document.getElementById('sidebar');
-const overlay   = document.getElementById('sidebar-overlay');
-hamburger.addEventListener('click', () => {
-  const open = sidebar.classList.toggle('open');
-  overlay.classList.toggle('visible', open);
-  hamburger.classList.toggle('open', open);
-});
-overlay.addEventListener('click', () => {
-  sidebar.classList.remove('open');
-  overlay.classList.remove('visible');
-  hamburger.classList.remove('open');
-});
-
-// ══════════════════════════════════════════
 // LOGOUT
 // ══════════════════════════════════════════
 function doLogout(){
@@ -771,8 +754,36 @@ function doLogout(){
   localStorage.removeItem('bb_user');
   window.location.href = 'index.html';
 }
-document.getElementById('nav-logout').addEventListener('click', e => { e.preventDefault(); doLogout(); });
-document.getElementById('sidebar-logout').addEventListener('click', e => { e.preventDefault(); doLogout(); });
+
+// ══════════════════════════════════════════
+// DOM-READY: sidebar, hamburger, logout listeners
+// FIX: moved inside DOMContentLoaded so elements are
+// guaranteed to exist and no null-reference crash
+// silently kills the rest of the JS.
+// ══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const hamburger = document.getElementById('hamburger');
+  const sidebar   = document.getElementById('sidebar');
+  const overlay   = document.getElementById('sidebar-overlay');
+  const navLogout = document.getElementById('nav-logout');
+  const sideLogout= document.getElementById('sidebar-logout');
+
+  if(hamburger && sidebar && overlay){
+    hamburger.addEventListener('click', () => {
+      const open = sidebar.classList.toggle('open');
+      overlay.classList.toggle('visible', open);
+      hamburger.classList.toggle('open', open);
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('visible');
+      hamburger.classList.remove('open');
+    });
+  }
+
+  if(navLogout)  navLogout.addEventListener('click',  e => { e.preventDefault(); doLogout(); });
+  if(sideLogout) sideLogout.addEventListener('click', e => { e.preventDefault(); doLogout(); });
+});
 
 // ══════════════════════════════════════════
 // TOAST
