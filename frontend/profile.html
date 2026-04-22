@@ -124,7 +124,6 @@
     }
     .form-group input:read-only { background:var(--paper-warm); color:var(--ink-muted); cursor:not-allowed; }
     .form-group textarea { resize:vertical; min-height:80px; }
-    .form-group textarea:read-only { background:var(--paper-warm); color:var(--ink-muted); cursor:not-allowed; }
     .input-pre { position:relative; }
     .input-pre input { padding-left:26px; }
     .input-pre span { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:0.82rem; color:var(--ink-muted); pointer-events:none; }
@@ -219,16 +218,12 @@
     .footer-bottom p { font-size:0.78rem; color:#555; }
     .footer-logo-text { font-family:'DM Serif Display',serif; font-size:1rem; color:#e8e5df; }
     .footer-logo-text span { color:var(--accent-mid); }
-
-    /* ── LOADING SKELETON ── */
-    .skeleton { background: linear-gradient(90deg, var(--paper-warm) 25%, var(--border) 50%, var(--paper-warm) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
-    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   </style>
 </head>
 <body>
 
 <!-- ── LOCK ── -->
-<div id="lock-screen" style="display:none">
+<div id="lock-screen">
   <div class="lock-icon">🔒</div>
   <h2>Login Required</h2>
   <p>You need to be logged in to view your profile.</p>
@@ -311,7 +306,7 @@
       <div class="profile-hero-badges" id="hero-badges"></div>
     </div>
     <div class="profile-hero-score">
-      <div class="ps-val" id="hero-score">—</div>
+      <div class="ps-val" id="hero-score">72</div>
       <div class="ps-label">Health Score</div>
     </div>
   </div>
@@ -394,8 +389,7 @@
           <textarea id="p-bio" readonly placeholder="Tell us a little about yourself…" rows="2"></textarea>
         </div>
       </div>
-      <!-- FIX: removed duplicate display:flex — only one style property now -->
-      <div style="display:none;gap:10px;margin-top:18px;align-items:center" id="personal-actions">
+      <div style="display:flex;gap:10px;margin-top:18px;display:none" id="personal-actions">
         <button class="btn-primary" onclick="savePersonal()">Save Changes</button>
         <button class="btn-ghost" onclick="cancelEditPersonal()">Cancel</button>
       </div>
@@ -438,8 +432,7 @@
           <div class="input-pre"><span>₹</span><input type="number" id="f-safe" readonly style="background:var(--accent-light);border-color:#b7e4c7;color:var(--accent);font-weight:600"/></div>
         </div>
       </div>
-      <!-- FIX: use display:none consistently; flex is applied via JS -->
-      <div id="financial-actions" style="display:none;gap:10px;margin-top:18px;align-items:center">
+      <div style="display:none;gap:10px;margin-top:18px" id="financial-actions">
         <button class="btn-primary" onclick="saveFinancial()">Save Changes</button>
         <button class="btn-ghost" onclick="cancelEditFinancial()">Cancel</button>
       </div>
@@ -509,7 +502,7 @@
       <div class="security-row">
         <div class="sec-info">
           <div class="s-title">Two-Factor Authentication</div>
-          <div class="s-desc" id="twofa-desc">Add an extra layer of security to your account</div>
+          <div class="s-desc">Add an extra layer of security to your account</div>
         </div>
         <label class="toggle">
           <input type="checkbox" id="toggle-2fa" onchange="toggle2FA(this)"/>
@@ -523,7 +516,7 @@
           <div class="s-desc">Get notified when someone logs into your account</div>
         </div>
         <label class="toggle">
-          <input type="checkbox" id="toggle-notif" checked onchange="saveNotifPref(this)"/>
+          <input type="checkbox" id="toggle-notif" checked onchange="showToast('Preference saved.')"/>
           <span class="toggle-slider"></span>
         </label>
       </div>
@@ -573,133 +566,138 @@
 </footer>
 
 <div class="toast" id="toast"></div>
-
 <script>
-// ══════════════════════════════════════════
-// FIX 1: AUTH CHECK — instant, no waiting
-// Show lock screen immediately if not logged in.
-// Do NOT block UI rendering with backend calls.
-// ══════════════════════════════════════════
+// ── AUTH ──
 (function(){
   if(!localStorage.getItem('bb_token')){
-    document.getElementById('lock-screen').style.display = 'flex';
-    document.getElementById('main-content').style.display = 'none';
-    document.querySelector('nav').style.display = 'none';
-    document.querySelector('footer').style.display = 'none';
-    document.getElementById('sidebar').style.display = 'none';
-    document.getElementById('sidebar-overlay').style.display = 'none';
+    document.getElementById('lock-screen').style.display='flex';
+    document.getElementById('main-content').style.display='none';
+    document.querySelector('nav').style.display='none';
+    document.querySelector('footer').style.display='none';
+    document.querySelector('.sidebar').style.display='none';
+    document.querySelector('.sidebar-overlay').style.display='none';
   } else {
-    document.getElementById('lock-screen').style.display = 'none';
-    // FIX: load from localStorage FIRST (instant), then sync from backend in background
-    loadProfileFromLocal();
-    syncFromBackendInBackground();
+    document.getElementById('lock-screen').style.display='none';
+    loadProfile();
   }
 })();
 
-// ══════════════════════════════════════════
-// FIX 2: LOAD FROM LOCAL FIRST (instant render)
-// ══════════════════════════════════════════
-function loadProfileFromLocal(){
-  const profile = JSON.parse(localStorage.getItem('bb_profile') || '{}');
-  const ctx     = JSON.parse(localStorage.getItem('bb_ctx') || '{}');
-  renderProfile(profile, ctx);
+// ── SIDEBAR ──
+const hamburger = document.getElementById('hamburger');
+const sidebar   = document.getElementById('sidebar');
+const overlay   = document.getElementById('sidebar-overlay');
+hamburger.addEventListener('click',()=>{
+  const open = sidebar.classList.toggle('open');
+  overlay.classList.toggle('visible',open);
+  hamburger.classList.toggle('open',open);
+});
+overlay.addEventListener('click',()=>{
+  sidebar.classList.remove('open');
+  overlay.classList.remove('visible');
+  hamburger.classList.remove('open');
+});
+
+// ── LOGOUT ──
+function doLogout(){ localStorage.removeItem('bb_token'); localStorage.removeItem('bb_user'); window.location.href='index.html'; }
+document.getElementById('nav-logout').addEventListener('click',e=>{e.preventDefault();doLogout();});
+document.getElementById('sidebar-logout').addEventListener('click',e=>{e.preventDefault();doLogout();});
+
+// ── TOAST ──
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  setTimeout(()=>t.className='toast',3200);
 }
 
-// ══════════════════════════════════════════
-// FIX 3: BACKGROUND BACKEND SYNC
-// Doesn't block the page. Updates silently after load.
-// ══════════════════════════════════════════
-async function syncFromBackendInBackground(){
+// ── TABS ──
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── LOAD PROFILE ──
+async function loadProfile(){
+  // Try to load from backend first
   try {
-    const res = await fetch('https://budgetbuddii-server.onrender.com/api/auth/me', {
+    const res = await fetch('https://budgetbuddii-server.onrender.com/api/auth/login', {
       headers: { 'Authorization': 'Bearer ' + localStorage.getItem('bb_token') }
     });
     if(res.ok){
-      const data = await res.json();
-      const user = data.user || data;
-      const existing = JSON.parse(localStorage.getItem('bb_profile') || '{}');
+      const { user } = await res.json();
+      // Merge backend data into localStorage for other pages to use
+      const existing = JSON.parse(localStorage.getItem('bb_profile')||'{}');
       const merged = { ...existing, ...user };
       localStorage.setItem('bb_profile', JSON.stringify(merged));
-      // Re-render silently with fresh data
-      const ctx = JSON.parse(localStorage.getItem('bb_ctx') || '{}');
-      renderProfile(merged, ctx);
     }
-  } catch(err){
-    // Silently ignore — local data is already shown
-    console.log('Backend sync skipped, using local data');
+  } catch(err) {
+    console.log('Using localStorage fallback');
   }
-}
 
-// ══════════════════════════════════════════
-// RENDER PROFILE (shared by local + backend)
-// ══════════════════════════════════════════
-function renderProfile(profile, ctx){
+  const profile = JSON.parse(localStorage.getItem('bb_profile')||'{}');
+  const ctx     = JSON.parse(localStorage.getItem('bb_ctx')||'{}');
+
   // Hero
-  const name   = profile.name  || localStorage.getItem('bb_user') || 'User';
-  const email  = profile.email || '—';
-  const avatar = profile.avatar || '🧑‍💻';
-  document.getElementById('hero-name').textContent   = name;
-  document.getElementById('hero-email').textContent  = email;
-  document.getElementById('hero-avatar').textContent = avatar;
-  document.getElementById('email-verify-desc').textContent = email !== '—' ? email : 'Not set';
+  const name  = profile.name  || localStorage.getItem('bb_user') || 'User';
+  const email = profile.email || '—';
+  const avatar= profile.avatar|| '🧑‍💻';
+  document.getElementById('hero-name').textContent  = name;
+  document.getElementById('hero-email').textContent = email;
+  document.getElementById('hero-avatar').textContent= avatar;
+  document.getElementById('email-verify-desc').textContent = email;
 
-  // Hero badges
+  // Badges in hero
   const badges = [];
-  const roleMap = { student:'🎓 Student', working:'💼 Professional', freelancer:'💻 Freelancer', other:'🙂 Member' };
-  if(profile.role) badges.push(roleMap[profile.role] || '🙂 Member');
-  if(profile.city) badges.push('📍 ' + profile.city);
-  const createdAt  = profile.createdAt ? new Date(profile.createdAt) : new Date();
-  const daysSince  = Math.max(0, Math.floor((Date.now() - createdAt) / 86400000));
-  badges.push('🗓 ' + daysSince + ' days with BudgetBuddy');
-  document.getElementById('hero-badges').innerHTML = badges.map(b => `<span class="ph-badge">${b}</span>`).join('');
+  if(profile.role) badges.push({ student:'🎓 Student', working:'💼 Professional', freelancer:'💻 Freelancer', other:'🙂 Member' }[profile.role]||'🙂 Member');
+  if(profile.city) badges.push('📍 '+profile.city);
+  const createdAt = profile.createdAt ? new Date(profile.createdAt) : new Date();
+  const daysSince = Math.floor((Date.now()-createdAt)/86400000);
+  badges.push('🗓 '+daysSince+' days with BudgetBuddy');
+  document.getElementById('hero-badges').innerHTML = badges.map(b=>`<span class="ph-badge">${b}</span>`).join('');
 
-  // Personal form fields
-  document.getElementById('p-name').value  = profile.name  || '';
-  document.getElementById('p-email').value = profile.email || '';
-  document.getElementById('p-phone').value = profile.phone || '';
-  document.getElementById('p-dob').value   = profile.dob   || '';
-  document.getElementById('p-city').value  = profile.city  || '';
-  document.getElementById('p-bio').value   = profile.bio   || '';
+  // Personal form
+  document.getElementById('p-name').value  = profile.name||'';
+  document.getElementById('p-email').value = profile.email||'';
+  document.getElementById('p-phone').value = profile.phone||'';
+  document.getElementById('p-dob').value   = profile.dob||'';
+  document.getElementById('p-city').value  = profile.city||'';
+  document.getElementById('p-bio').value   = profile.bio||'';
+ const roleEl = document.getElementById('p-role');
+if(roleEl) roleEl.value = { student:'Student', working:'Working Professional', freelancer:'Freelancer', other:'Other' }[profile.role]||'';
 
   // Avatar picker — mark selected
-  document.querySelectorAll('.av-opt').forEach(o => {
+  document.querySelectorAll('.av-opt').forEach(o=>{
     o.classList.toggle('selected', o.dataset.av === avatar);
   });
 
-  // Financial fields
-  const income  = parseFloat(profile.income)          || parseFloat(ctx['ctx-income'])   || 0;
-  const parttime= parseFloat(profile.parttime_income)  || parseFloat(ctx['ctx-parttime']) || 0;
-  const fixed   = parseFloat(profile.fixed_exp)        || parseFloat(ctx['ctx-fixed'])    || 0;
-  const savings = parseFloat(profile.savings_target)   || parseFloat(ctx['ctx-savings'])  || 0;
-  const invest  = parseFloat(profile.invest)           || parseFloat(ctx['ctx-invest'])   || 0;
-  // FIX: include parttime in safe-to-spend calculation
-  const totalIncome = income + parttime;
-  const safe    = Math.max(0, totalIncome - fixed - savings - invest);
-
-  document.getElementById('f-income').value   = income   || '';
-  document.getElementById('f-parttime').value = parttime || '';   // FIX: was missing
-  document.getElementById('f-fixed').value    = fixed    || '';
-  document.getElementById('f-savings').value  = savings  || '';
-  document.getElementById('f-invest').value   = invest   || '';
-  document.getElementById('f-safe').value     = safe     || '';
+  // Financial
+  const income  = parseFloat(profile.income)||parseFloat(ctx['ctx-income'])||0;
+  const fixed   = parseFloat(profile.fixed_exp)||parseFloat(ctx['ctx-fixed'])||0;
+  const savings = parseFloat(profile.savings_target)||parseFloat(ctx['ctx-savings'])||0;
+  const invest  = parseFloat(ctx['ctx-invest'])||0;
+  const safe    = income - fixed - savings - invest;
+  document.getElementById('f-income').value  = income||'';
+  document.getElementById('f-fixed').value   = fixed||'';
+  document.getElementById('f-savings').value = savings||'';
+  document.getElementById('f-invest').value  = invest||'';
+  document.getElementById('f-safe').value    = Math.max(0,safe)||'';
 
   // Goal chips
-  const goalType = profile.goal_type || profile.goalType || 'emergency';
-  document.querySelectorAll('#goal-chips .chip-opt').forEach(o => {
-    o.classList.toggle('selected', o.dataset.val === goalType);
+  const goalType = profile.goal_type||profile.goalType||'emergency';
+  document.querySelectorAll('#goal-chips .chip-opt').forEach(o=>{
+    o.classList.toggle('selected', o.dataset.val===goalType);
   });
 
   // Mini stats
-  const goals       = JSON.parse(localStorage.getItem('bb_goals') || '[]');
-  const activeGoals = goals.filter(g => g.saved < g.target).length;
-  const totalSaved  = goals.reduce((s, g) => s + (g.saved || 0), 0);
-  document.getElementById('mst-goals').textContent   = activeGoals;
-  document.getElementById('mst-saved').textContent   = '₹' + totalSaved.toLocaleString('en-IN');
-  document.getElementById('mst-joined').textContent  = createdAt.toLocaleDateString('en-IN', { month:'short', year:'numeric' });
-
-  // FIX: calculate health score from real data
-  const score = calcHealthScore(income, fixed, savings, invest, goals, totalSaved);
-  document.getElementById('hero-score').textContent = score;
+  const goals      = JSON.parse(localStorage.getItem('bb_goals')||'[]');
+  const activeGoals= goals.filter(g=>g.saved<g.target).length;
+  const totalSaved = goals.reduce((s,g)=>s+g.saved,0);
+  document.getElementById('mst-goals').textContent = activeGoals;
+  document.getElementById('mst-saved').textContent = '₹'+totalSaved.toLocaleString('en-IN');
+  document.getElementById('mst-joined').textContent= createdAt.toLocaleDateString('en-IN',{month:'short',year:'numeric'});
 
   // Goals overview
   renderGoalsOverview(goals);
@@ -711,144 +709,44 @@ function renderProfile(profile, ctx){
   renderActivity();
 
   // Session info
-  const ua = navigator.userAgent;
-  const browser = ua.includes('Edg') ? 'Edge' : ua.includes('Chrome') ? 'Chrome' : ua.includes('Firefox') ? 'Firefox' : ua.includes('Safari') ? 'Safari' : 'Browser';
-  document.getElementById('session-info').textContent = browser + ' · Just now';
-
-  // Restore 2FA and notif preferences from local storage
-  const prefs = JSON.parse(localStorage.getItem('bb_prefs') || '{}');
-  document.getElementById('toggle-notif').checked = prefs.loginNotif !== false; // default on
+  document.getElementById('session-info').textContent = navigator.userAgent.includes('Chrome')?'Chrome Browser · Just now':'Browser · Just now';
 }
 
-// ══════════════════════════════════════════
-// FIX: HEALTH SCORE CALCULATOR (was hardcoded 72)
-// ══════════════════════════════════════════
-function calcHealthScore(income, fixed, savings, invest, goals, totalSaved){
-  if(!income) return '—';
-  let score = 0;
-  // Savings rate (max 40 pts)
-  const savingsRate = income > 0 ? (savings / income) : 0;
-  if(savingsRate >= 0.3) score += 40;
-  else if(savingsRate >= 0.2) score += 30;
-  else if(savingsRate >= 0.1) score += 20;
-  else if(savingsRate > 0) score += 10;
-  // Expense ratio (max 30 pts)
-  const expRatio = income > 0 ? (fixed / income) : 1;
-  if(expRatio <= 0.4) score += 30;
-  else if(expRatio <= 0.6) score += 20;
-  else if(expRatio <= 0.8) score += 10;
-  // Has investment (10 pts)
-  if(invest > 0) score += 10;
-  // Has goals (10 pts)
-  if(goals.length > 0) score += 10;
-  // Has savings (10 pts)
-  if(totalSaved > 0) score += 10;
-  return Math.min(100, score);
-}
-
-// ══════════════════════════════════════════
-// LOGOUT
-// ══════════════════════════════════════════
-function doLogout(){
-  localStorage.removeItem('bb_token');
-  localStorage.removeItem('bb_user');
-  window.location.href = 'index.html';
-}
-
-// ══════════════════════════════════════════
-// DOM-READY: sidebar, hamburger, logout listeners
-// FIX: moved inside DOMContentLoaded so elements are
-// guaranteed to exist and no null-reference crash
-// silently kills the rest of the JS.
-// ══════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-  const hamburger = document.getElementById('hamburger');
-  const sidebar   = document.getElementById('sidebar');
-  const overlay   = document.getElementById('sidebar-overlay');
-  const navLogout = document.getElementById('nav-logout');
-  const sideLogout= document.getElementById('sidebar-logout');
-
-  if(hamburger && sidebar && overlay){
-    hamburger.addEventListener('click', () => {
-      const open = sidebar.classList.toggle('open');
-      overlay.classList.toggle('visible', open);
-      hamburger.classList.toggle('open', open);
-    });
-    overlay.addEventListener('click', () => {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('visible');
-      hamburger.classList.remove('open');
-    });
-  }
-
-  if(navLogout)  navLogout.addEventListener('click',  e => { e.preventDefault(); doLogout(); });
-  if(sideLogout) sideLogout.addEventListener('click', e => { e.preventDefault(); doLogout(); });
-});
-
-// ══════════════════════════════════════════
-// TOAST
-// ══════════════════════════════════════════
-function showToast(msg, type = ''){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + type;
-  setTimeout(() => { t.className = 'toast'; }, 3200);
-}
-
-// ══════════════════════════════════════════
-// TABS
-// ══════════════════════════════════════════
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-  });
-});
-
-// ══════════════════════════════════════════
-// GOALS OVERVIEW
-// ══════════════════════════════════════════
+// ── GOALS OVERVIEW ──
 function renderGoalsOverview(goals){
   const el = document.getElementById('goals-overview');
-  if(!goals.length){
-    el.innerHTML = '<p style="font-size:0.85rem;color:var(--ink-muted)">No savings goals yet. <a href="savinggoal.html" style="color:var(--accent);font-weight:600">Create your first goal →</a></p>';
-    return;
-  }
-  el.innerHTML = goals.map(g => {
-    const pct = Math.min(100, g.target > 0 ? (g.saved / g.target * 100) : 0);
+  if(!goals.length){ el.innerHTML='<p style="font-size:0.85rem;color:var(--ink-muted)">No savings goals yet. <a href="savinggoal.html" style="color:var(--accent);font-weight:600">Create your first goal →</a></p>'; return; }
+  el.innerHTML = goals.map(g=>{
+    const pct = Math.min(100, g.target>0?(g.saved/g.target*100):0);
     return `
       <div class="progress-item">
         <div class="p-top">
-          <span class="p-name">${g.icon || '🎯'} ${g.name}</span>
-          <span class="p-val">₹${(g.saved||0).toLocaleString('en-IN')} / ₹${(g.target||0).toLocaleString('en-IN')}</span>
+          <span class="p-name">${g.icon} ${g.name}</span>
+          <span class="p-val">₹${g.saved.toLocaleString('en-IN')} / ₹${g.target.toLocaleString('en-IN')}</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
       </div>`;
   }).join('');
 }
 
-// ══════════════════════════════════════════
-// ACHIEVEMENTS
-// ══════════════════════════════════════════
+// ── ACHIEVEMENTS ──
 const ALL_BADGES = [
-  { id:'first_goal',   icon:'🎯', name:'First Goal Set',    desc:'Created your first savings goal',     check:(g,s,d)=> g.length > 0 },
-  { id:'saver_start',  icon:'💰', name:'Saver Starter',     desc:'Saved ₹1,000 total',                  check:(g,s,d)=> s >= 1000 },
-  { id:'goal_done',    icon:'✅', name:'Goal Crusher',       desc:'Completed a savings goal',             check:(g,s,d)=> g.some(x => x.saved >= x.target) },
-  { id:'week_streak',  icon:'📅', name:'7-Day Streak',      desc:'Stayed within budget for 7 days',     check:(g,s,d)=> d >= 7 },
-  { id:'calc_pro',     icon:'🧮', name:'Calculator Pro',    desc:'Used Smart Balance Calculator',        check:()=> !!localStorage.getItem('bb_ctx') },
-  { id:'ef_started',   icon:'🛡️', name:'Safety First',     desc:'Started your emergency fund',          check:()=> !!localStorage.getItem('bb_ef_config') },
-  { id:'month_member', icon:'🗓', name:'One Month Member',  desc:'Been with BudgetBuddy for 30 days',   check:(g,s,d)=> d >= 30 },
-  { id:'big_saver',    icon:'🏦', name:'Big Saver',         desc:'Saved ₹10,000 total',                 check:(g,s,d)=> s >= 10000 },
-  { id:'sim_user',     icon:'📈', name:'Simulation Expert', desc:'Used What-If Simulation',             check:()=> !!localStorage.getItem('bb_sim_history') },
-  { id:'multi_goal',   icon:'🎪', name:'Multi-Tasker',      desc:'Created 3 or more savings goals',     check:(g,s,d)=> g.length >= 3 },
+  { id:'first_goal',   icon:'🎯', name:'First Goal Set',    desc:'Created your first savings goal',     check: (g,s,d)=> g.length > 0 },
+  { id:'saver_start',  icon:'💰', name:'Saver Starter',     desc:'Saved ₹1,000 total',                  check: (g,s,d)=> s >= 1000 },
+  { id:'goal_done',    icon:'✅', name:'Goal Crusher',       desc:'Completed a savings goal',             check: (g,s,d)=> g.some(x=>x.saved>=x.target) },
+  { id:'week_streak',  icon:'📅', name:'7-Day Streak',      desc:'Stayed within budget for 7 days',     check: (g,s,d)=> d >= 7 },
+  { id:'calc_pro',     icon:'🧮', name:'Calculator Pro',    desc:'Used Smart Balance Calculator',        check: ()=> !!localStorage.getItem('bb_ctx') },
+  { id:'ef_started',   icon:'🛡️', name:'Safety First',     desc:'Started your emergency fund',          check: ()=> !!localStorage.getItem('bb_ef_config') },
+  { id:'month_member', icon:'🗓', name:'One Month Member',  desc:'Been with BudgetBuddy for 30 days',   check: (g,s,d)=> d >= 30 },
+  { id:'big_saver',    icon:'🏦', name:'Big Saver',         desc:'Saved ₹10,000 total',                 check: (g,s,d)=> s >= 10000 },
+  { id:'sim_user',     icon:'📈', name:'Simulation Expert', desc:'Used What-If Simulation',             check: ()=> !!localStorage.getItem('bb_sim_history') },
+  { id:'multi_goal',   icon:'🎪', name:'Multi-Tasker',      desc:'Created 3 or more savings goals',     check: (g,s,d)=> g.length >= 3 },
 ];
 
 function renderAchievements(goals, totalSaved, daysSince){
   const grid = document.getElementById('badge-grid');
   grid.innerHTML = '';
-  ALL_BADGES.forEach(b => {
+  ALL_BADGES.forEach(b=>{
     const earned = b.check(goals, totalSaved, daysSince);
     const div = document.createElement('div');
     div.className = 'badge-card' + (earned ? '' : ' locked');
@@ -857,27 +755,23 @@ function renderAchievements(goals, totalSaved, daysSince){
   });
 }
 
-// ══════════════════════════════════════════
-// ACTIVITY FEED
-// ══════════════════════════════════════════
+// ── ACTIVITY ──
 function renderActivity(){
-  const txHist  = JSON.parse(localStorage.getItem('bb_deposit_hist') || '[]');
-  const efTx    = JSON.parse(localStorage.getItem('bb_ef_tx') || '[]');
-  const simHist = JSON.parse(localStorage.getItem('bb_sim_history') || '[]');
+  const txHist  = JSON.parse(localStorage.getItem('bb_deposit_hist')||'[]');
+  const efTx    = JSON.parse(localStorage.getItem('bb_ef_tx')||'[]');
+  const simHist = JSON.parse(localStorage.getItem('bb_sim_history')||'[]');
   const feed    = document.getElementById('activity-feed');
 
   const activities = [
-    ...txHist.slice(0,3).map(t => ({ icon:'🎯', name:`Deposit → ${t.goalName}`, time:t.date, amt:`+₹${(t.amount||0).toLocaleString('en-IN')}`, pos:true })),
-    ...efTx.slice(0,2).map(t => ({ icon:'🛡️', name:`Emergency Fund ${t.type}`, time:t.date, amt:`${t.type==='deposit'?'+':'-'}₹${(t.amount||0).toLocaleString('en-IN')}`, pos:t.type==='deposit' })),
-    ...simHist.slice(0,2).map(s => ({ icon:'📈', name:`Simulation: "${(s.q||'').slice(0,40)}…"`, time:new Date(s.ts).toISOString(), amt:s.tag||'', pos:true })),
-  ].sort((a,b) => new Date(b.time) - new Date(a.time)).slice(0,8);
+    ...txHist.slice(0,3).map(t=>({ icon:'🎯', name:`Deposit → ${t.goalName}`, time:t.date, amt:`+₹${t.amount.toLocaleString('en-IN')}`, pos:true })),
+    ...efTx.slice(0,2).map(t=>({ icon:'🛡️', name:`Emergency Fund ${t.type}`, time:t.date, amt:`${t.type==='deposit'?'+':'-'}₹${t.amount.toLocaleString('en-IN')}`, pos:t.type==='deposit' })),
+    ...simHist.slice(0,2).map(s=>({ icon:'📈', name:`Simulation: "${s.q.slice(0,40)}…"`, time: new Date(s.ts).toISOString(), amt:s.tag, pos:true })),
+  ].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,8);
 
-  if(!activities.length){
-    feed.innerHTML = '<p style="font-size:0.85rem;color:var(--ink-muted)">No recent activity yet. Start using BudgetBuddy features!</p>';
-    return;
-  }
-  feed.innerHTML = activities.map(a => {
-    const d = new Date(a.time).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+  if(!activities.length){ feed.innerHTML='<p style="font-size:0.85rem;color:var(--ink-muted)">No recent activity yet. Start using BudgetBuddy features!</p>'; return; }
+
+  feed.innerHTML = activities.map(a=>{
+    const d = new Date(a.time).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
     return `
       <div class="activity-item">
         <div class="act-icon">${a.icon}</div>
@@ -887,271 +781,161 @@ function renderActivity(){
   }).join('');
 }
 
-// ══════════════════════════════════════════
-// AVATAR PICKER
-// ══════════════════════════════════════════
-document.getElementById('avatar-picker').addEventListener('click', e => {
+// ── AVATAR PICKER ──
+document.getElementById('avatar-picker').addEventListener('click', e=>{
   const opt = e.target.closest('.av-opt');
   if(!opt) return;
-  document.querySelectorAll('.av-opt').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.av-opt').forEach(o=>o.classList.remove('selected'));
   opt.classList.add('selected');
   const av = opt.dataset.av;
   document.getElementById('hero-avatar').textContent = av;
-  const profile = JSON.parse(localStorage.getItem('bb_profile') || '{}');
+  const profile = JSON.parse(localStorage.getItem('bb_profile')||'{}');
   profile.avatar = av;
   localStorage.setItem('bb_profile', JSON.stringify(profile));
-  showToast('Avatar updated! 🎉', 'success');
+  showToast('Avatar updated! 🎉','success');
 });
 
-// ══════════════════════════════════════════
-// GOAL CHIPS
-// ══════════════════════════════════════════
-document.getElementById('goal-chips').addEventListener('click', e => {
+// ── GOAL CHIPS ──
+document.getElementById('goal-chips').addEventListener('click',e=>{
   const opt = e.target.closest('.chip-opt');
   if(!opt) return;
-  document.querySelectorAll('#goal-chips .chip-opt').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('#goal-chips .chip-opt').forEach(o=>o.classList.remove('selected'));
   opt.classList.add('selected');
 });
 
 function saveGoalType(){
   const selected = document.querySelector('#goal-chips .chip-opt.selected');
-  if(!selected){ showToast('Please select a goal first.', 'error'); return; }
-  const profile = JSON.parse(localStorage.getItem('bb_profile') || '{}');
+  if(!selected) return;
+  const profile = JSON.parse(localStorage.getItem('bb_profile')||'{}');
   profile.goalType = selected.dataset.val;
-  localStorage.setItem('bb_profile', JSON.stringify(profile));
-  showToast('Primary goal updated!', 'success');
+  localStorage.setItem('bb_profile',JSON.stringify(profile));
+  showToast('Primary goal updated!','success');
 }
 
-// ══════════════════════════════════════════
-// EDIT PERSONAL — FIX: no backend call on cancel
-// ══════════════════════════════════════════
+// ── EDIT PERSONAL ──
 let personalEditing = false;
-// Stores values at edit-start so cancel can restore without a network call
-let personalSnapshot = {};
-
 function toggleEditPersonal(){
-  if(!personalEditing){
-    // Enter edit mode — snapshot current values
-    personalSnapshot = {
-      name:  document.getElementById('p-name').value,
-      phone: document.getElementById('p-phone').value,
-      city:  document.getElementById('p-city').value,
-      bio:   document.getElementById('p-bio').value,
-    };
-    personalEditing = true;
-    ['p-name','p-phone','p-city','p-bio'].forEach(id => {
-      document.getElementById(id).readOnly = false;
-    });
-    document.getElementById('personal-actions').style.display = 'flex';
-    document.getElementById('edit-personal-btn').textContent = '✕ Cancel';
-  } else {
-    cancelEditPersonal();
-  }
+  personalEditing = !personalEditing;
+  const fields = ['p-name','p-phone','p-city','p-bio'];
+  fields.forEach(id=>{ const el=document.getElementById(id); el.readOnly=!personalEditing; });
+  document.getElementById('personal-actions').style.display = personalEditing ? 'flex' : 'none';
+  document.getElementById('edit-personal-btn').textContent = personalEditing ? '✕ Cancel' : '✏️ Edit';
+  if(!personalEditing) cancelEditPersonal();
 }
-
 function cancelEditPersonal(){
   personalEditing = false;
-  // FIX: restore snapshot instead of calling loadProfile() again
-  document.getElementById('p-name').value  = personalSnapshot.name  || '';
-  document.getElementById('p-phone').value = personalSnapshot.phone || '';
-  document.getElementById('p-city').value  = personalSnapshot.city  || '';
-  document.getElementById('p-bio').value   = personalSnapshot.bio   || '';
-  ['p-name','p-phone','p-city','p-bio'].forEach(id => {
-    document.getElementById(id).readOnly = true;
-  });
-  document.getElementById('personal-actions').style.display = 'none';
-  document.getElementById('edit-personal-btn').textContent = '✏️ Edit';
+  loadProfile();
+  document.getElementById('personal-actions').style.display='none';
+  document.getElementById('edit-personal-btn').textContent='✏️ Edit';
+  ['p-name','p-phone','p-city','p-bio'].forEach(id=>{ document.getElementById(id).readOnly=true; });
 }
-
 async function savePersonal(){
-  const profile = JSON.parse(localStorage.getItem('bb_profile') || '{}');
-  const newName = document.getElementById('p-name').value.trim();
-  if(!newName){ showToast('Name cannot be empty.', 'error'); return; }
-  profile.name  = newName;
+  const profile = JSON.parse(localStorage.getItem('bb_profile')||'{}');
+  profile.name  = document.getElementById('p-name').value.trim()||profile.name;
   profile.phone = document.getElementById('p-phone').value.trim();
   profile.city  = document.getElementById('p-city').value.trim();
   profile.bio   = document.getElementById('p-bio').value.trim();
-  localStorage.setItem('bb_profile', JSON.stringify(profile));
+  localStorage.setItem('bb_profile',JSON.stringify(profile));
   localStorage.setItem('bb_user', profile.name.split(' ')[0]);
   document.getElementById('hero-name').textContent = profile.name;
 
-  // FIX: use correct backend URL (https, not localhost)
+  // Also update on backend
   try {
-    await fetch('https://budgetbuddii-server.onrender.com/api/user/update', {
+    await fetch('http://localhost:3000/api/user/update', {
       method: 'PUT',
-      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + localStorage.getItem('bb_token') },
-      body: JSON.stringify({ name: profile.name, phone: profile.phone, city: profile.city, bio: profile.bio })
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+localStorage.getItem('bb_token') },
+      body: JSON.stringify({ name: profile.name, phone: profile.phone, city: profile.city })
     });
-  } catch(err){ console.log('Backend update skipped'); }
+  } catch(err) { console.log('Backend update skipped'); }
 
   cancelEditPersonal();
-  showToast('Profile updated! ✅', 'success');
+  showToast('Profile updated! ✅','success');
 }
 
-// ══════════════════════════════════════════
-// EDIT FINANCIAL — FIX: no backend call on cancel
-// ══════════════════════════════════════════
+// ── EDIT FINANCIAL ──
 let finEditing = false;
-let finSnapshot = {};
-
 function toggleEditFinancial(){
-  if(!finEditing){
-    finSnapshot = {
-      income:   document.getElementById('f-income').value,
-      parttime: document.getElementById('f-parttime').value,
-      fixed:    document.getElementById('f-fixed').value,
-      savings:  document.getElementById('f-savings').value,
-      invest:   document.getElementById('f-invest').value,
-    };
-    finEditing = true;
-    ['f-income','f-parttime','f-fixed','f-savings','f-invest'].forEach(id => {
-      const el = document.getElementById(id);
-      if(el) el.readOnly = false;
-    });
-    document.getElementById('financial-actions').style.display = 'flex';
-    document.getElementById('edit-fin-btn').textContent = '✕ Cancel';
-    // Live safe-to-spend update while editing
-    ['f-income','f-parttime','f-fixed','f-savings','f-invest'].forEach(id => {
-      const el = document.getElementById(id);
-      if(el) el.addEventListener('input', updateSafeToSpend);
-    });
-  } else {
-    cancelEditFinancial();
-  }
+  finEditing = !finEditing;
+  const fields = ['f-income','f-fixed','f-savings','f-invest'];
+  fields.forEach(id=>{ const el=document.getElementById(id); if(el) el.readOnly=!finEditing; });
+  document.getElementById('financial-actions').style.display = finEditing ? 'flex' : 'none';
+  document.getElementById('edit-fin-btn').textContent = finEditing ? '✕ Cancel' : '✏️ Edit';
+  if(!finEditing){ cancelEditFinancial(); }
 }
-
-function updateSafeToSpend(){
-  const income   = parseFloat(document.getElementById('f-income').value) || 0;
-  const parttime = parseFloat(document.getElementById('f-parttime').value) || 0;
-  const fixed    = parseFloat(document.getElementById('f-fixed').value) || 0;
-  const savings  = parseFloat(document.getElementById('f-savings').value) || 0;
-  const invest   = parseFloat(document.getElementById('f-invest').value) || 0;
-  document.getElementById('f-safe').value = Math.max(0, income + parttime - fixed - savings - invest);
-}
-
 function cancelEditFinancial(){
-  finEditing = false;
-  // FIX: restore snapshot, do not call loadProfile()
-  document.getElementById('f-income').value   = finSnapshot.income   || '';
-  document.getElementById('f-parttime').value = finSnapshot.parttime || '';
-  document.getElementById('f-fixed').value    = finSnapshot.fixed    || '';
-  document.getElementById('f-savings').value  = finSnapshot.savings  || '';
-  document.getElementById('f-invest').value   = finSnapshot.invest   || '';
-  updateSafeToSpend();
-  ['f-income','f-parttime','f-fixed','f-savings','f-invest'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el){ el.readOnly = true; el.removeEventListener('input', updateSafeToSpend); }
-  });
-  document.getElementById('financial-actions').style.display = 'none';
-  document.getElementById('edit-fin-btn').textContent = '✏️ Edit';
+  finEditing=false;
+  loadProfile();
+  document.getElementById('financial-actions').style.display='none';
+  document.getElementById('edit-fin-btn').textContent='✏️ Edit';
+  ['f-income','f-fixed','f-savings','f-invest'].forEach(id=>{ const el=document.getElementById(id); if(el) el.readOnly=true; });
 }
-
 async function saveFinancial(){
-  const income   = parseFloat(document.getElementById('f-income').value) || 0;
-  const parttime = parseFloat(document.getElementById('f-parttime').value) || 0;
-  const fixed    = parseFloat(document.getElementById('f-fixed').value) || 0;
-  const savings  = parseFloat(document.getElementById('f-savings').value) || 0;
-  const invest   = parseFloat(document.getElementById('f-invest').value) || 0;
-  const safe     = Math.max(0, income + parttime - fixed - savings - invest);
+  const income  = parseFloat(document.getElementById('f-income').value)||0;
+  const fixed   = parseFloat(document.getElementById('f-fixed').value)||0;
+  const savings = parseFloat(document.getElementById('f-savings').value)||0;
+  const invest  = parseFloat(document.getElementById('f-invest').value)||0;
+  const safe    = Math.max(0, income-fixed-savings-invest);
   document.getElementById('f-safe').value = safe;
 
-  const profile = JSON.parse(localStorage.getItem('bb_profile') || '{}');
-  profile.income           = income;
-  profile.parttime_income  = parttime;
-  profile.fixed_exp        = fixed;
-  profile.savings_target   = savings;
-  profile.invest           = invest;
-  localStorage.setItem('bb_profile', JSON.stringify(profile));
+  const profile = JSON.parse(localStorage.getItem('bb_profile')||'{}');
+  profile.income=income; profile.fixed_exp=fixed; profile.savings_target=savings;
+  localStorage.setItem('bb_profile',JSON.stringify(profile));
   localStorage.setItem('bb_ctx', JSON.stringify({
-    'ctx-income':income, 'ctx-parttime':parttime, 'ctx-fixed':fixed,
-    'ctx-savings':savings, 'ctx-invest':invest, 'ctx-safe':safe, 'ctx-days':30
+    'ctx-income':income,'ctx-fixed':fixed,'ctx-savings':savings,
+    'ctx-invest':invest,'ctx-safe':safe,'ctx-days':30
   }));
 
-  // Update health score after saving
-  const goals = JSON.parse(localStorage.getItem('bb_goals') || '[]');
-  const totalSaved = goals.reduce((s,g) => s + (g.saved||0), 0);
-  document.getElementById('hero-score').textContent = calcHealthScore(income, fixed, savings, invest, goals, totalSaved);
-
+  // Also update on backend
   try {
-    await fetch('https://budgetbuddii-server.onrender.com/api/user/update', {
+    await fetch('http://localhost:3000/api/user/update', {
       method: 'PUT',
-      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + localStorage.getItem('bb_token') },
-      body: JSON.stringify({ income, fixed_exp:fixed, savings_target:savings, parttime_income:parttime, invest })
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+localStorage.getItem('bb_token') },
+      body: JSON.stringify({ income, fixed_exp: fixed, savings_target: savings })
     });
-  } catch(err){ console.log('Backend update skipped'); }
+  } catch(err) { console.log('Backend update skipped'); }
 
   cancelEditFinancial();
-  showToast('Financial details updated! ✅', 'success');
+  showToast('Financial details updated! ✅','success');
 }
 
-// ══════════════════════════════════════════
-// FIX: 2FA TOGGLE — persists state properly
-// ══════════════════════════════════════════
+// ── 2FA TOGGLE ──
 function toggle2FA(el){
-  const prefs = JSON.parse(localStorage.getItem('bb_prefs') || '{}');
-  prefs.twofa = el.checked;
-  localStorage.setItem('bb_prefs', JSON.stringify(prefs));
-  const desc = document.getElementById('twofa-desc');
-  if(el.checked){
-    desc.textContent = '2FA is enabled (requires backend to fully activate)';
-    showToast('2FA enabled ✅', 'success');
-  } else {
-    desc.textContent = 'Add an extra layer of security to your account';
-    showToast('2FA disabled.', '');
-  }
-  // FIX: do NOT reset el.checked — let the toggle stay in user's chosen state
+  showToast(el.checked ? '2FA enabled (requires backend to activate).' : '2FA disabled.', '');
+  el.checked = false;
 }
 
-// FIX: Login notifications preference saved properly
-function saveNotifPref(el){
-  const prefs = JSON.parse(localStorage.getItem('bb_prefs') || '{}');
-  prefs.loginNotif = el.checked;
-  localStorage.setItem('bb_prefs', JSON.stringify(prefs));
-  showToast(el.checked ? 'Login notifications enabled.' : 'Login notifications disabled.', 'success');
-}
-
-// ══════════════════════════════════════════
-// EXPORT DATA
-// ══════════════════════════════════════════
+// ── EXPORT DATA ──
 function exportData(){
   const data = {
-    profile:    JSON.parse(localStorage.getItem('bb_profile') || '{}'),
-    goals:      JSON.parse(localStorage.getItem('bb_goals') || '[]'),
-    efConfig:   JSON.parse(localStorage.getItem('bb_ef_config') || '{}'),
-    efTx:       JSON.parse(localStorage.getItem('bb_ef_tx') || '[]'),
-    deposits:   JSON.parse(localStorage.getItem('bb_deposit_hist') || '[]'),
-    sims:       JSON.parse(localStorage.getItem('bb_sim_history') || '[]'),
+    profile:  JSON.parse(localStorage.getItem('bb_profile')||'{}'),
+    goals:    JSON.parse(localStorage.getItem('bb_goals')||'[]'),
+    efConfig: JSON.parse(localStorage.getItem('bb_ef_config')||'{}'),
+    efTx:     JSON.parse(localStorage.getItem('bb_ef_tx')||'[]'),
+    deposits: JSON.parse(localStorage.getItem('bb_deposit_hist')||'[]'),
+    sims:     JSON.parse(localStorage.getItem('bb_sim_history')||'[]'),
     exportedAt: new Date().toISOString(),
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url; a.download = 'budgetbuddy-data.json'; a.click();
+  a.href=url; a.download='budgetbuddy-data.json'; a.click();
   URL.revokeObjectURL(url);
-  showToast('Data exported successfully! 📁', 'success');
+  showToast('Data exported successfully! 📁','success');
 }
 
-// ══════════════════════════════════════════
-// CLEAR DATA
-// ══════════════════════════════════════════
+// ── CLEAR DATA ──
 function clearAllData(){
   if(!confirm('This will delete ALL your BudgetBuddy data. This cannot be undone. Are you sure?')) return;
-  ['bb_goals','bb_ef_config','bb_ef_tx','bb_deposit_hist','bb_sim_history','bb_ctx','bb_prefs'].forEach(k => localStorage.removeItem(k));
-  showToast('All app data cleared.', '');
-  setTimeout(() => {
-    const profile = JSON.parse(localStorage.getItem('bb_profile') || '{}');
-    const ctx = JSON.parse(localStorage.getItem('bb_ctx') || '{}');
-    renderProfile(profile, ctx);
-  }, 400);
+  ['bb_goals','bb_ef_config','bb_ef_tx','bb_deposit_hist','bb_sim_history','bb_ctx'].forEach(k=>localStorage.removeItem(k));
+  showToast('All app data cleared.','');
+  setTimeout(loadProfile, 400);
 }
 
-// ══════════════════════════════════════════
-// DELETE ACCOUNT
-// ══════════════════════════════════════════
+// ── DELETE ACCOUNT ──
 function deleteAccount(){
   if(!confirm('DELETE YOUR ACCOUNT? This CANNOT be undone.')) return;
   localStorage.clear();
-  window.location.href = 'index.html';
+  window.location.href='index.html';
 }
 </script>
 </body>
