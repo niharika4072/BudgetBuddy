@@ -20,16 +20,7 @@
     body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); font-size:15px; line-height:1.6; overflow-x:hidden; }
 
     /* ── LOCK SCREEN ── */
-    #lock-screen {
-      position:fixed; inset:0; background:var(--paper); z-index:9999;
-      display:flex; align-items:center; justify-content:center;
-      flex-direction:column; gap:20px; text-align:center; padding:24px;
-    }
-    .lock-icon { width:72px; height:72px; background:var(--accent-light); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; }
-    #lock-screen h2 { font-family:'DM Serif Display',serif; font-size:1.8rem; letter-spacing:-0.02em; }
-    #lock-screen p { color:var(--ink-soft); max-width:340px; font-size:0.92rem; }
-    .btn-go-login { background:var(--accent); color:white; text-decoration:none; padding:12px 32px; border-radius:10px; font-weight:600; font-size:0.95rem; transition:background 0.2s; }
-    .btn-go-login:hover { background:var(--accent-dark); }
+   
 
     /* ── NAV ── */
     nav {
@@ -238,14 +229,7 @@
 </head>
 <body>
 
-<!-- ── LOCK SCREEN ── -->
-<div id="lock-screen">
-  <div class="lock-icon">🔒</div>
-  <h2>Login Required</h2>
-  <p>You need to be logged in to use What-If Simulation and other BudgetBuddy features.</p>
-  <a href="login.html" class="btn-go-login">Go to Login →</a>
-  <a href="index.html" style="font-size:0.82rem;color:var(--ink-muted);text-decoration:none;margin-top:4px;">← Back to Home</a>
-</div>
+
 
 <!-- ── SIDEBAR OVERLAY ── -->
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
