@@ -7,559 +7,96 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --ink: #1a1a1a;
-      --ink-soft: #4a4a4a;
-      --ink-muted: #8a8a8a;
-      --paper: #fafaf8;
-      --paper-warm: #f5f3ee;
-      --accent: #2d6a4f;
-      --accent-light: #d8f3dc;
-      --accent-mid: #52b788;
-      --border: #e0ddd7;
-      --white: #ffffff;
-      --nav-h: 68px;
+      --ink: #1a1a1a; --ink-soft: #4a4a4a; --ink-muted: #8a8a8a;
+      --paper: #fafaf8; --paper-warm: #f5f3ee;
+      --accent: #2d6a4f; --accent-light: #d8f3dc; --accent-mid: #52b788;
+      --border: #e0ddd7; --white: #ffffff; --nav-h: 68px;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--paper);
-      color: var(--ink);
-      font-size: 16px;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    /* ── NAV ── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: var(--nav-h);
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 5%;
-      z-index: 1000;
-      box-shadow: 0 1px 12px rgba(0,0,0,0.05);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-    }
-
-    .logo-icon {
-      width: 36px; height: 36px;
-      background: var(--accent);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-    }
-
+    body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); font-size: 16px; line-height: 1.6; overflow-x: hidden; }
+    nav { position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h); background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 5%; z-index: 1000; box-shadow: 0 1px 12px rgba(0,0,0,0.05); }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
     .logo-icon svg { width: 20px; height: 20px; fill: white; }
-
-    .logo-text {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.35rem;
-      color: var(--ink);
-      letter-spacing: -0.02em;
-    }
-
+    .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.35rem; color: var(--ink); letter-spacing: -0.02em; }
     .logo-text span { color: var(--accent); }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      list-style: none;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: var(--ink-soft);
-      font-size: 0.88rem;
-      font-weight: 500;
-      padding: 8px 14px;
-      border-radius: 8px;
-      transition: background 0.2s, color 0.2s;
-    }
-
+    .nav-links { display: flex; align-items: center; gap: 6px; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--ink-soft); font-size: 0.88rem; font-weight: 500; padding: 8px 14px; border-radius: 8px; transition: background 0.2s, color 0.2s; }
     .nav-links a:hover { background: var(--paper-warm); color: var(--ink); }
-
-    .nav-links .btn-login {
-      background: var(--accent);
-      color: var(--white);
-      border-radius: 8px;
-      padding: 8px 20px;
-      font-weight: 600;
-      font-size: 0.88rem;
-    }
-
+    .nav-links .btn-login { background: var(--accent); color: var(--white); border-radius: 8px; padding: 8px 20px; font-weight: 600; font-size: 0.88rem; }
     .nav-links .btn-login:hover { background: #245e44; color: white; }
-
-    /* ── HERO ── */
-    .hero {
-      padding-top: calc(var(--nav-h) + 80px);
-      padding-bottom: 80px;
-      text-align: center;
-      padding-left: 5%;
-      padding-right: 5%;
-      max-width: 760px;
-      margin: 0 auto;
-    }
-
-    .hero-badge {
-      display: inline-block;
-      background: var(--accent-light);
-      color: var(--accent);
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      padding: 6px 14px;
-      border-radius: 20px;
-      margin-bottom: 22px;
-    }
-
-    .hero h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(2.4rem, 5vw, 3.8rem);
-      line-height: 1.15;
-      letter-spacing: -0.03em;
-      color: var(--ink);
-      margin-bottom: 20px;
-    }
-
-    .hero h1 em {
-      font-style: italic;
-      color: var(--accent);
-    }
-
-    .hero p {
-      color: var(--ink-soft);
-      font-size: 1.05rem;
-      max-width: 540px;
-      margin: 0 auto 36px;
-      font-weight: 300;
-    }
-
-    .hero-cta {
-      display: inline-flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-      text-decoration: none;
-      padding: 13px 30px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      transition: background 0.2s, transform 0.15s;
-      display: inline-block;
-    }
-
+    .hero { padding-top: calc(var(--nav-h) + 80px); padding-bottom: 80px; text-align: center; padding-left: 5%; padding-right: 5%; max-width: 760px; margin: 0 auto; }
+    .hero-badge { display: inline-block; background: var(--accent-light); color: var(--accent); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 14px; border-radius: 20px; margin-bottom: 22px; }
+    .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2.4rem, 5vw, 3.8rem); line-height: 1.15; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 20px; }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero p { color: var(--ink-soft); font-size: 1.05rem; max-width: 540px; margin: 0 auto 36px; font-weight: 300; }
+    .hero-cta { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn-primary { background: var(--accent); color: white; text-decoration: none; padding: 13px 30px; border-radius: 10px; font-weight: 600; font-size: 0.95rem; transition: background 0.2s, transform 0.15s; display: inline-block; }
     .btn-primary:hover { background: #245e44; transform: translateY(-1px); }
-
-    .btn-outline {
-      background: transparent;
-      color: var(--ink);
-      text-decoration: none;
-      padding: 13px 30px;
-      border-radius: 10px;
-      font-weight: 500;
-      font-size: 0.95rem;
-      border: 1.5px solid var(--border);
-      transition: border-color 0.2s, background 0.2s;
-      display: inline-block;
-    }
-
+    .btn-outline { background: transparent; color: var(--ink); text-decoration: none; padding: 13px 30px; border-radius: 10px; font-weight: 500; font-size: 0.95rem; border: 1.5px solid var(--border); transition: border-color 0.2s, background 0.2s; display: inline-block; }
     .btn-outline:hover { border-color: var(--ink-soft); background: var(--paper-warm); }
-
-    /* ── FEATURES SECTION ── */
-    .features-section {
-      padding: 70px 5%;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .section-label {
-      text-align: center;
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 10px;
-    }
-
-    .section-title {
-      text-align: center;
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(1.7rem, 3vw, 2.4rem);
-      letter-spacing: -0.02em;
-      color: var(--ink);
-      margin-bottom: 48px;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 18px;
-      justify-items: center;
-    }
-
-    .feature-card {
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 28px 24px;
-      width: 100%;
-      max-width: 280px;
-      cursor: pointer;
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .feature-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: var(--accent);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.25s;
-    }
-
-    .feature-card:hover {
-      border-color: var(--accent-mid);
-      box-shadow: 0 8px 28px rgba(45,106,79,0.10);
-      transform: translateY(-3px);
-    }
-
+    .features-section { padding: 70px 5%; max-width: 1100px; margin: 0 auto; }
+    .section-label { text-align: center; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+    .section-title { text-align: center; font-family: 'DM Serif Display', serif; font-size: clamp(1.7rem, 3vw, 2.4rem); letter-spacing: -0.02em; color: var(--ink); margin-bottom: 48px; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; justify-items: center; }
+    .feature-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 14px; padding: 28px 24px; width: 100%; max-width: 280px; cursor: pointer; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 12px; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; position: relative; overflow: hidden; }
+    .feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.25s; }
+    .feature-card:hover { border-color: var(--accent-mid); box-shadow: 0 8px 28px rgba(45,106,79,0.10); transform: translateY(-3px); }
     .feature-card:hover::before { transform: scaleX(1); }
-
-    .feature-icon {
-      width: 44px; height: 44px;
-      background: var(--accent-light);
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-
+    .feature-icon { width: 44px; height: 44px; background: var(--accent-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .feature-icon svg { width: 22px; height: 22px; }
-
-    .feature-card h3 {
-      font-size: 0.98rem;
-      font-weight: 600;
-      color: var(--ink);
-      line-height: 1.3;
-    }
-
-    .feature-card p {
-      font-size: 0.83rem;
-      color: var(--ink-muted);
-      line-height: 1.5;
-      font-weight: 300;
-    }
-
-    .feature-arrow {
-      margin-top: auto;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
+    .feature-card h3 { font-size: 0.98rem; font-weight: 600; color: var(--ink); line-height: 1.3; }
+    .feature-card p { font-size: 0.83rem; color: var(--ink-muted); line-height: 1.5; font-weight: 300; }
+    .feature-arrow { margin-top: auto; font-size: 0.8rem; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity 0.2s; }
     .feature-card:hover .feature-arrow { opacity: 1; }
-
-    /* ── QUOTES SECTION ── */
-    .quotes-section {
-      background: var(--ink);
-      padding: 80px 5%;
-      text-align: center;
-      overflow: hidden;
-    }
-
-    .quote-container {
-      max-width: 680px;
-      margin: 0 auto;
-      min-height: 120px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .quote-mark {
-      font-family: 'DM Serif Display', serif;
-      font-size: 5rem;
-      color: var(--accent-mid);
-      line-height: 0.6;
-      margin-bottom: 20px;
-      opacity: 0.6;
-    }
-
-    #quote-text {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(1.3rem, 2.5vw, 1.85rem);
-      color: #f0ede8;
-      line-height: 1.4;
-      letter-spacing: -0.01em;
-      transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-
-    #quote-author {
-      margin-top: 18px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: var(--accent-mid);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      transition: opacity 0.5s ease;
-    }
-
-    .quote-dots {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 32px;
-    }
-
-    .dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #444;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
+    .quotes-section { background: var(--ink); padding: 80px 5%; text-align: center; overflow: hidden; }
+    .quote-container { max-width: 680px; margin: 0 auto; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .quote-mark { font-family: 'DM Serif Display', serif; font-size: 5rem; color: var(--accent-mid); line-height: 0.6; margin-bottom: 20px; opacity: 0.6; }
+    #quote-text { font-family: 'DM Serif Display', serif; font-size: clamp(1.3rem, 2.5vw, 1.85rem); color: #f0ede8; line-height: 1.4; letter-spacing: -0.01em; transition: opacity 0.5s ease, transform 0.5s ease; }
+    #quote-author { margin-top: 18px; font-size: 0.82rem; font-weight: 500; color: var(--accent-mid); letter-spacing: 0.08em; text-transform: uppercase; transition: opacity 0.5s ease; }
+    .quote-dots { display: flex; gap: 8px; justify-content: center; margin-top: 32px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #444; cursor: pointer; transition: background 0.2s; }
     .dot.active { background: var(--accent-mid); width: 20px; border-radius: 3px; }
-
-    /* ── WHY TRACK SECTION ── */
-    .why-section {
-      padding: 80px 5%;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .why-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
-      margin-top: 50px;
-    }
-
+    .why-section { padding: 80px 5%; max-width: 1100px; margin: 0 auto; }
+    .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 50px; }
     @media (max-width: 700px) { .why-grid { grid-template-columns: 1fr; } }
-
-    .why-card {
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    .why-card-img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      display: block;
-      background: var(--paper-warm);
-    }
-
-    .why-card-img-placeholder {
-      width: 100%;
-      height: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 4rem;
-    }
-
-    .why-card-body {
-      padding: 28px 26px;
-    }
-
-    .why-tag {
-      display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 20px;
-      margin-bottom: 12px;
-    }
-
+    .why-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .why-card-img-placeholder { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+    .why-card-body { padding: 28px 26px; }
+    .why-tag { display: inline-block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; margin-bottom: 12px; }
     .tag-student { background: var(--accent-light); color: var(--accent); }
     .tag-adult { background: #fef3c7; color: #92400e; }
-
-    .why-card-body h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.35rem;
-      letter-spacing: -0.02em;
-      margin-bottom: 14px;
-      color: var(--ink);
-    }
-
-    .why-card-body ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .why-card-body li {
-      font-size: 0.88rem;
-      color: var(--ink-soft);
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      font-weight: 300;
-    }
-
-    .why-card-body li::before {
-      content: '';
-      width: 6px; height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      margin-top: 7px;
-      flex-shrink: 0;
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      background: var(--ink);
-      color: #888;
-      padding: 52px 5% 32px;
-      margin-top: 80px;
-    }
-
-    .footer-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1.6fr 1fr 1fr 1fr;
-      gap: 40px;
-    }
-
-    @media (max-width: 700px) {
-      .footer-inner { grid-template-columns: 1fr 1fr; }
-    }
-
-    .footer-brand p {
-      font-size: 0.83rem;
-      line-height: 1.7;
-      margin-top: 12px;
-      color: #666;
-      font-weight: 300;
-      max-width: 260px;
-    }
-
-    .footer-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .footer-logo-icon {
-      width: 32px; height: 32px;
-      background: var(--accent);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-    }
-
+    .why-card-body h3 { font-family: 'DM Serif Display', serif; font-size: 1.35rem; letter-spacing: -0.02em; margin-bottom: 14px; color: var(--ink); }
+    .why-card-body ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .why-card-body li { font-size: 0.88rem; color: var(--ink-soft); display: flex; gap: 10px; align-items: flex-start; font-weight: 300; }
+    .why-card-body li::before { content: ''; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+    footer { background: var(--ink); color: #888; padding: 52px 5% 32px; margin-top: 80px; }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; }
+    @media (max-width: 700px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+    .footer-brand p { font-size: 0.83rem; line-height: 1.7; margin-top: 12px; color: #666; font-weight: 300; max-width: 260px; }
+    .footer-logo { display: flex; align-items: center; gap: 10px; }
+    .footer-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
     .footer-logo-icon svg { width: 17px; height: 17px; fill: white; }
-
-    .footer-logo-text {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.15rem;
-      color: #e8e5df;
-    }
-
+    .footer-logo-text { font-family: 'DM Serif Display', serif; font-size: 1.15rem; color: #e8e5df; }
     .footer-logo-text span { color: var(--accent-mid); }
-
-    .footer-col h4 {
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: #aaa;
-      margin-bottom: 16px;
-    }
-
-    .footer-col a {
-      display: block;
-      text-decoration: none;
-      color: #666;
-      font-size: 0.85rem;
-      margin-bottom: 10px;
-      transition: color 0.2s;
-      font-weight: 300;
-    }
-
+    .footer-col h4 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #aaa; margin-bottom: 16px; }
+    .footer-col a { display: block; text-decoration: none; color: #666; font-size: 0.85rem; margin-bottom: 10px; transition: color 0.2s; font-weight: 300; }
     .footer-col a:hover { color: var(--accent-mid); }
-
-    .footer-bottom {
-      max-width: 1100px;
-      margin: 40px auto 0;
-      padding-top: 24px;
-      border-top: 1px solid #2a2a2a;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
+    .footer-bottom { max-width: 1100px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
     .footer-bottom p { font-size: 0.78rem; color: #555; }
-
-    /* ── DIVIDER ── */
-    .divider {
-      width: 48px; height: 3px;
-      background: var(--accent);
-      border-radius: 2px;
-      margin: 0 auto 16px;
-    }
-
-    /* fade animation */
-    .fade-out { opacity: 0; transform: translateY(8px); }
-    .fade-in  { opacity: 1; transform: translateY(0); }
+    .divider { width: 48px; height: 3px; background: var(--accent); border-radius: 2px; margin: 0 auto 16px; }
   </style>
 </head>
 <body>
 
-  <!-- ── NAV ── -->
   <nav>
     <a href="index.html" class="logo">
       <div class="logo-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H9l3-3 3 3h-2v4z"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H9l3-3 3 3h-2v4z"/></svg>
       </div>
       <span class="logo-text">Budget<span>Buddy</span></span>
     </a>
-
     <ul class="nav-links" id="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="dashboard.html" id="nav-dashboard" style="display:none">Dashboard</a></li>
@@ -571,7 +108,6 @@
     </ul>
   </nav>
 
-  <!-- ── HERO ── -->
   <section class="hero">
     <div class="hero-badge">🎓 Built for Students &amp; Young Adults</div>
     <h1>Take control of your<br><em>money, effortlessly.</em></h1>
@@ -582,83 +118,49 @@
     </div>
   </section>
 
-  <!-- ── FEATURES GRID ── -->
   <section class="features-section">
     <p class="section-label">Features</p>
     <h2 class="section-title">Everything you need to manage money</h2>
     <div class="features-grid">
-
       <a href="smartbalace.html" class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
         <h3>Smart Balance Calculator</h3>
         <p>Know your exact safe-to-spend amount after savings and fixed costs.</p>
         <span class="feature-arrow">Open →</span>
       </a>
-
       <a href="whatif.html" class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
         <h3>What-If Simulation</h3>
         <p>Test financial scenarios — see what happens if you save more or spend less.</p>
         <span class="feature-arrow">Open →</span>
       </a>
-
       <a href="savinggoal.html" class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
         <h3>Savings Goal Tracker</h3>
         <p>Set short or long-term goals and track your monthly progress automatically.</p>
         <span class="feature-arrow">Open →</span>
       </a>
-
       <a href="emergencyf.html" class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <h3>Emergency Fund Tracker</h3>
         <p>Build a 3-month safety net step by step with progress reminders.</p>
         <span class="feature-arrow">Open →</span>
       </a>
-
       <a href="dashboard.html" class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-            <rect x="3" y="14" width="7" height="7"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
         <h3>Dashboard</h3>
         <p>View your spending reports, health score, and streaks in one place.</p>
         <span class="feature-arrow">Open →</span>
       </a>
-
       <a href="tips.html" class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
         <h3>Money Tips</h3>
         <p>Bite-sized money tips and techniques tailored for student life.</p>
         <span class="feature-arrow">Open →</span>
       </a>
-
     </div>
   </section>
 
-  <!-- ── QUOTES ── -->
   <section class="quotes-section">
     <div class="quote-container">
       <div class="quote-mark">"</div>
@@ -668,18 +170,13 @@
     <div class="quote-dots" id="quote-dots"></div>
   </section>
 
-  <!-- ── WHY TRACK MONEY ── -->
   <section class="why-section">
     <p class="section-label">Why It Matters</p>
     <div class="divider"></div>
     <h2 class="section-title">Why should you track money?</h2>
     <div class="why-grid">
-
-      <!-- Student -->
       <div class="why-card">
-        <div class="why-card-img-placeholder" style="background: linear-gradient(135deg, #d8f3dc, #b7e4c7);">
-          🎓
-        </div>
+        <div class="why-card-img-placeholder" style="background: linear-gradient(135deg, #d8f3dc, #b7e4c7);">🎓</div>
         <div class="why-card-body">
           <span class="why-tag tag-student">As a Student</span>
           <h3>Build habits that last a lifetime</h3>
@@ -692,12 +189,8 @@
           </ul>
         </div>
       </div>
-
-      <!-- Adult -->
       <div class="why-card">
-        <div class="why-card-img-placeholder" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
-          💼
-        </div>
+        <div class="why-card-img-placeholder" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">💼</div>
         <div class="why-card-body">
           <span class="why-tag tag-adult">As a Young Adult</span>
           <h3>Turn income into lasting wealth</h3>
@@ -710,46 +203,35 @@
           </ul>
         </div>
       </div>
-
     </div>
   </section>
 
-  <!-- ── FOOTER ── -->
   <footer>
     <div class="footer-inner">
       <div class="footer-brand">
         <div class="footer-logo">
-          <div class="footer-logo-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H9l3-3 3 3h-2v4z"/>
-            </svg>
-          </div>
+          <div class="footer-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H9l3-3 3 3h-2v4z"/></svg></div>
           <span class="footer-logo-text">Budget<span>Buddy</span></span>
         </div>
         <p>Smart expense and savings tracker built for students and young adults navigating their financial journey.</p>
       </div>
-
       <div class="footer-col">
         <h4>Features</h4>
-        <a href="smart-balance.html">Smart Calculator</a>
-        <a href="what-if.html">What-If Simulation</a>
-        <a href="savings-goal.html">Savings Goals</a>
-        <a href="emergency-fund.html">Emergency Fund</a>
+        <!-- ✅ FIX: Corrected all filenames to match actual files -->
+        <a href="smartbalace.html">Smart Calculator</a>
+        <a href="whatif.html">What-If Simulation</a>
+        <a href="savinggoal.html">Savings Goals</a>
+        <a href="emergencyf.html">Emergency Fund</a>
         <a href="dashboard.html">Dashboard</a>
       </div>
-
       <div class="footer-col">
         <h4>Learn</h4>
         <a href="tips.html">Financial Tips</a>
         <a href="guide.html">User Guide</a>
-        <a href="#">Blog</a>
       </div>
-
       <div class="footer-col">
         <h4>Company</h4>
         <a href="contact.html">Contact Us</a>
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Use</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -758,41 +240,39 @@
     </div>
   </footer>
 
-  <!-- ── LOGIN-AWARE LOGIC ── -->
   <script>
+    // ✅ FIX: Single auth check using ONLY bb_token (removed bb_logged_in entirely)
     (function() {
-      const isLoggedIn = localStorage.getItem('bb_logged_in') === 'true';
+      const isLoggedIn = !!localStorage.getItem('bb_token');
 
       if (isLoggedIn) {
+        // If already logged in, go to dashboard
         window.location.replace('dashboard.html');
         return;
       }
 
-      // Show/hide nav items based on auth state
+      // Not logged in — show homepage normally
+      // Update nav to show Login button (already default state)
       const navDashboard = document.getElementById('nav-dashboard');
       const navLoginLi   = document.getElementById('nav-login-li');
       const navLogoutLi  = document.getElementById('nav-logout-li');
 
-      if (isLoggedIn) {
-        navDashboard.style.display = 'block';
-        navLoginLi.style.display   = 'none';
-        navLogoutLi.style.display  = 'block';
-      }
+      navDashboard.style.display = 'none';
+      navLoginLi.style.display   = 'block';
+      navLogoutLi.style.display  = 'none';
 
       document.getElementById('btn-logout')?.addEventListener('click', function(e) {
         e.preventDefault();
-        localStorage.removeItem('bb_logged_in');
+        localStorage.removeItem('bb_token');
         localStorage.removeItem('bb_user');
+        localStorage.removeItem('bb_logged_in'); // clean up old key
         window.location.href = 'index.html';
       });
     })();
   </script>
 
-  <!-- ── QUOTES JS ── -->
   <script>
-    if(localStorage.getItem('bb_token')){
-  window.location.replace('dashboard.html');
-}
+    // Quotes rotator
     const quotes = [
       { text: "Do not save what is left after spending, but spend what is left after saving.", author: "— Warren Buffett" },
       { text: "Tracking ₹50 a day reveals ₹1,500 of invisible spending every month.", author: "— BudgetBuddy Insight" },
@@ -803,50 +283,34 @@
       { text: "It's not your salary that makes you rich, it's your spending habits.", author: "— Charles A. Jaffe" },
       { text: "Invest in yourself. Your career is the engine of your wealth.", author: "— Paul Clitheroe" },
     ];
-
     let current = 0;
-    const textEl = document.getElementById('quote-text');
+    const textEl   = document.getElementById('quote-text');
     const authorEl = document.getElementById('quote-author');
-    const dotsEl = document.getElementById('quote-dots');
-
-    // Build dots
+    const dotsEl   = document.getElementById('quote-dots');
     quotes.forEach((_, i) => {
       const d = document.createElement('div');
       d.className = 'dot' + (i === 0 ? ' active' : '');
       d.addEventListener('click', () => goTo(i));
       dotsEl.appendChild(d);
     });
-
     function updateDots() {
-      document.querySelectorAll('.dot').forEach((d, i) => {
-        d.className = 'dot' + (i === current ? ' active' : '');
-      });
+      document.querySelectorAll('.dot').forEach((d, i) => { d.className = 'dot' + (i === current ? ' active' : ''); });
     }
-
     function goTo(idx) {
-      textEl.style.opacity = '0';
-      textEl.style.transform = 'translateY(10px)';
-      authorEl.style.opacity = '0';
+      textEl.style.opacity = '0'; textEl.style.transform = 'translateY(10px)'; authorEl.style.opacity = '0';
       setTimeout(() => {
         current = idx;
         textEl.textContent = quotes[current].text;
         authorEl.textContent = quotes[current].author;
         textEl.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        textEl.style.opacity = '1';
-        textEl.style.transform = 'translateY(0)';
-        authorEl.style.transition = 'opacity 0.5s ease';
-        authorEl.style.opacity = '1';
+        textEl.style.opacity = '1'; textEl.style.transform = 'translateY(0)';
+        authorEl.style.transition = 'opacity 0.5s ease'; authorEl.style.opacity = '1';
         updateDots();
       }, 350);
     }
-
-    // Init
     textEl.textContent = quotes[0].text;
     authorEl.textContent = quotes[0].author;
-
-    // Auto-rotate every 5s
     setInterval(() => goTo((current + 1) % quotes.length), 5000);
   </script>
-
 </body>
 </html>
