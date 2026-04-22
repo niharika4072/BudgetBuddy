@@ -557,6 +557,7 @@ async function loadGoals(){
     const res  = await fetch(API+'/goals', { headers });
     const data = await res.json();
     const goals = data.goals || [];
+      _cachedGoals = goals;
     const grid  = document.getElementById('goals-grid');
     const empty = document.getElementById('empty-state');
     grid.innerHTML = '';
@@ -649,7 +650,7 @@ async function deleteGoal(id){
 // ── DEPOSIT MODAL ──
 function openDepositModal(id){
   depositTargetId = id;
-  const g = getGoals().find(g=>g.id===id);
+  const g = _cachedGoals.find(g=>g.id===id);
   if(!g) return;
   document.getElementById('deposit-modal-sub').textContent = `Goal: "${g.name}" — ₹${(g.target-g.saved).toLocaleString('en-IN')} remaining`;
   document.getElementById('deposit-amt').value = '';
