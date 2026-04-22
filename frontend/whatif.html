@@ -405,17 +405,8 @@ function loadContext(){
     if(saved[id]) document.getElementById(id).value = saved[id];
   });
 }
-  (function(){
-  if(!localStorage.getItem('bb_token')){
-    document.getElementById('lock-screen').style.display='flex';
-    document.getElementById('main-content').style.display='none';
-    document.querySelector('nav').style.display='none';
-    document.querySelector('.sidebar').style.display='none';
-    document.querySelector('.sidebar-overlay').style.display='none';
-  } else {
-    document.getElementById('lock-screen').style.display='none';
-  }
-})();
+  
+
 // ── AUTH ──
 (function(){
   const loggedIn = !!localStorage.getItem('bb_token');
